@@ -2,7 +2,8 @@ import { motion } from "framer-motion";
 
 const Services = () => {
   return (
-    <section className="#003566 text-white py-20 px-6 md:px-20">
+    <section className=" text-white py-20 px-6 md:px-20"
+    style={{ backgroundColor: "#83a2d4" }}>
         <motion.div
           className="text-center mb-16"
           initial={{ opacity: 0, y: 50 }}

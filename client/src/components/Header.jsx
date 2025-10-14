@@ -5,9 +5,11 @@ const Header = () => {
   const [active, setActive] = useState("");
 
   return (
-    <header className="#003566 text-white px-8 py-4 flex justify-between items-center shadow-md">
+    <header className=" text-white px-8 py-4 flex justify-between items-center shadow-md">
       {/* Logo */}
-      <div className="text-2xl font-bold">
+      <div 
+      className="text-2xl font-bold"
+      style={{ backgroundColor: "#83a2d4" }}>
         <Link to="/" className="hover:text-gray-300">e-Jansamvad</Link>
       </div>
 
