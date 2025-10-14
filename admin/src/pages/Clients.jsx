@@ -12,7 +12,7 @@ const Clients = () => {
         const response = await fetch("https://line-host-rt77.onrender.com/grievance/allGrievances", {
           method: "GET",
           headers: { "Content-Type": "application/json" },
-          credentials: "include",
+          // credentials: "include",
         });
         if (response.ok) {
           const data = await response.json();
