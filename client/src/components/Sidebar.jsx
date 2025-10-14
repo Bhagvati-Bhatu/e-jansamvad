@@ -20,27 +20,22 @@ export default function Sidebar() {
       {/* Menu Items */}
       <ul className="space-y-3 overflow-y-auto flex-grow">
         <SidebarItem
-          icon="📺"
           text={<Link to="/" className="no-underline text-inherit">Appeal Dashboard</Link>}
           badge="NEW"
         />
         <SidebarItem
-          icon="➕"
           text={<Link to="/newGrievanceOrganisation" className="no-underline text-inherit">Lodge Public Grievance</Link>}
         />
         <SidebarItem icon="➕" text="Lodge Pension Grievance" />
         <SidebarItem icon="➕" text="Check Status" />
         <SidebarItem icon="🔄" text="Account Activity" />
         <SidebarItem
-          icon="✏️"
           text={<Link to="/profile" className="no-underline text-inherit">Edit Profile</Link>}
         />
         <SidebarItem
-          icon="🔒"
           text={<Link to="/change-password" className="no-underline text-inherit">Change Password</Link>}
         />
         <SidebarItem
-          icon="🔌"
           text="Sign out"
           special
           onClick={logout}

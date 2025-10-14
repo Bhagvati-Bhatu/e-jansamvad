@@ -50,7 +50,7 @@ export default function Footer() {
           <span className="ml-2 mr-2">Web Information Manager</span> | 
           <span className="ml-2">Version 7.0.01092019.0.0</span>
         </p> */}
-        <p>Copyright © 2025 | Last Updated On: 24-01-2025</p>
+        <p>Copyright © 2025 | Last Updated On: 15-10-2025</p>
         {/* <p>Total Visitors: <strong>4,254,451</strong> (since 19-01-2024)</p> */}
       </div>
     </footer>
