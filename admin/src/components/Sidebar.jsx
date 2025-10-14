@@ -12,7 +12,7 @@ const Sidebar = () => {
     <div className="w-64 h-screen bg-gradient-to-b from-green-900 to-green-700 text-white flex flex-col shadow-xl">
       {/* Logo/Header */}
       <h1 className="text-2xl font-bold p-6 tracking-wide text-center border-b border-green-600">
-        जनसुनवाई - समाधान
+        ई-जनसंवाद - समाधान
       </h1>
 
       {/* Navigation Links */}
