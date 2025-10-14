@@ -68,7 +68,7 @@ const SignupForm = () => {
 
   async function handleSignup() {
     console.log(formData);
-    const response = await fetch("https://aspire-hackathon.onrender.com/user/signup", {
+    const response = await fetch("https://line-host-rt77.onrender.com/user/signup", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

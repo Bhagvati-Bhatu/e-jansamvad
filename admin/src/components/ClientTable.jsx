@@ -18,7 +18,7 @@ const ClientTable = () => {
     useEffect(() => {
         const fetchGrievances = async () => {
             try {
-                const response = await fetch("https://aspire-hackathon.onrender.com/grievance/allGrievances", {
+                const response = await fetch("https://line-host-rt77.onrender.com/grievance/allGrievances", {
                     method: "GET",
                     headers: { "Content-Type": "application/json" },
                     credentials: "include",
@@ -64,7 +64,7 @@ const ClientTable = () => {
       useEffect(() => {
         const fetchGrievances = async () => {
           try {
-            const response = await fetch("https://aspire-hackathon.onrender.com/grievance/allGrievances", {
+            const response = await fetch("https://line-host-rt77.onrender.com/grievance/allGrievances", {
               method: "GET",
               headers: { "Content-Type": "application/json" },
               credentials: "include",
