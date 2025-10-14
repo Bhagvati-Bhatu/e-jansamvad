@@ -14,12 +14,12 @@ export default function Contact() {
             <p className="text-lg text-gray-800 font-semibold">
               Email:
               <a href="mailto:grievances@uttarpradeshgovt.com" className="text-blue-600">
-                grievances@uttarpradeshgovt.com
+                grievances@bitrix.com
               </a>
             </p>
 
             <p className="text-lg text-gray-800 font-semibold">
-              Phone: <span className="text-blue-600">+1 800-123-4567</span>
+              Phone: <span className="text-blue-600">+3 648 385 274</span>
             </p>
           </div>
           <a
@@ -50,7 +50,7 @@ export default function Contact() {
               <p className="text-lg text-gray-800 font-semibold">
                 Email:
                 <a href="mailto: mediasupport@uttarpradeshgovt.com" className="text-blue-600">
-                  mediasupport@uttarpradeshgovt.com
+                  mediasupport@bitrix.com
                 </a>
               </p>
 
