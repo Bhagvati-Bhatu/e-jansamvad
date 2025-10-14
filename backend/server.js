@@ -102,6 +102,12 @@ app.get("/download/:filename", async (req, res) => {
     }
 });
 
+//adding get
+app.get("/", (req, res) => {
+  res.send("✅ E-JanSamvad backend is running successfully!");
+});
+
+
 // Routes
 app.use("/user", userRouter);
 app.use("/grievance", grievanceRouter);
