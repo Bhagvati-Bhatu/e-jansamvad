@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const images = [
-    "/images/bg1.jpg",
     "/images/bg3.jpg",
+    "/images/bg1.jpg",
     "/images/bg7.jpg",
     "/images/bg5.jpg",
   ];
