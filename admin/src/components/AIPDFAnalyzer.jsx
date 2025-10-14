@@ -8,7 +8,8 @@ const AIAnalyzer = () => {
     const [answer, setAnswer] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const API_BASE_URL = "http://127.0.0.1:8001";  // Update this if deployed
+    // const API_BASE_URL = "http://127.0.0.1:8001";  // Update this if deployed'
+   const API_BASE_URL = "https://line-host-rt77.onrender.com"
 
     /** 📌 Handle PDF Upload */
     const handleFileChange = (event) => {
