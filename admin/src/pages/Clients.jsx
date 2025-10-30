@@ -9,7 +9,7 @@ const Clients = () => {
   useEffect(() => {
     const fetchGrievances = async () => {
       try {
-        const response = await fetch("https://line-host-rt77.onrender.com/grievance/allGrievances", {
+        const response = await fetch("http://localhost:5000/grievance/allGrievances", {
           method: "GET",
           headers: { "Content-Type": "application/json" },
           credentials: "include",

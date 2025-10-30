@@ -25,7 +25,7 @@ function Sidebar({ setActivePage }) {
   const navigate = useNavigate();
 
   function logout() {
-    fetch("https://line-host-rt77.onrender.com/user/logout", {
+    fetch("http://localhost:5000/user/logout", {
       method: "GET",
       credentials: "include",
     })
@@ -123,7 +123,7 @@ function HomePage() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch("https://line-host-rt77.onrender.com/user/validate", {
+        const res = await fetch("http://localhost:5000/user/validate", {
           credentials: "include"
         });
   

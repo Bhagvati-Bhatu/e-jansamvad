@@ -17,7 +17,8 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cookieParser());
 app.use(cors({
-    origin: "https://e-jansamvad.onrender.com",// Allow frontend requests
+    // allow all orgins
+    origin: true,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
