@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { useEffect } from "react";
+import { useRef } from "react";
 
 const Navbar = () => {
   const [active, setActive] = useState("Home");
@@ -10,23 +11,32 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
 
 
-  // const [open, setOpen] = useState(false);
-  // const ref = useRef(null);
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const closeTimer = useRef(null);
 
-  // useEffect(() => {
-  //   function handleClick(e) {
-  //     if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-  //   }
-  //   function handleEsc(e) {
-  //     if (e.key === "Escape") setOpen(false);
-  //   }
-  //   document.addEventListener("mousedown", handleClick);
-  //   document.addEventListener("keydown", handleEsc);
-  //   return () => {
-  //     document.removeEventListener("mousedown", handleClick);
-  //     document.removeEventListener("keydown", handleEsc);
-  //   };
-  // }, []);
+  useEffect(() => {
+    function onDocClick(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    function onEsc(e) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onDocClick);
+    document.addEventListener("keydown", onEsc);
+    return () => {
+      document.removeEventListener("mousedown", onDocClick);
+      document.removeEventListener("keydown", onEsc);
+    };
+  }, []);
+
+  function scheduleClose(ms = 150) {
+    clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => setOpen(false), ms);
+  }
+  function cancelClose() {
+    clearTimeout(closeTimer.current);
+  }
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -109,36 +119,55 @@ const Navbar = () => {
       </nav>
       <div>
         {isLoggedIn ? (
-          <div className="relative inline-block text-left group">
-          <button
-            className="bg-white text-blue-900 px-4 py-2 rounded-full font-semibold hover:bg-gray-200 transition"
-          >
-            {user ? user.email : 'user'}
-          </button>
-          <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-800">
-            <ul className="py-1">
-              <li>
-                <button
-                  onClick={() => navigate("/dashboard")}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                >
-                  Dashboard
-                </button>
-              </li>
-              <li>
-                <button
-                  onClick={() => {
-                    logout();
-                    navigate("/");
-                  }}
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                >
-                  Logout
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
+           <div
+           ref={ref}
+           className="relative inline-block text-left"
+           tabIndex={0}
+           onFocus={() => { cancelClose(); setOpen(true); }}
+           onBlur={() => scheduleClose(0)}
+         >
+           <button
+             onClick={() => setOpen(o => !o)}
+             onMouseEnter={() => { cancelClose(); setOpen(true); }}
+             onMouseLeave={() => scheduleClose(150)}
+             aria-expanded={open}
+             className="bg-white text-blue-900 px-4 py-2 rounded-full font-semibold hover:bg-gray-200 transition"
+           >
+             {user ? user.email : "user"}
+           </button>
+     
+           {/*
+             Keep the dropdown DOM-wise inside the wrapper so pointer events count as "inside".
+             Attach mouse enter/leave on the dropdown too so moving into it cancels the close timer.
+           */}
+           {open && (
+             <div
+               onMouseEnter={() => cancelClose()}
+               onMouseLeave={() => scheduleClose(150)}
+               className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50"
+               style={{ WebkitTapHighlightColor: "transparent" }}
+             >
+               <ul className="py-1">
+                 <li>
+                   <button
+                     onClick={() => { setOpen(false); navigate("/homepage"); }}
+                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                   >
+                     Dashboard
+                   </button>
+                 </li>
+                 <li>
+                   <button
+                     onClick={() => { setOpen(false); logout(); navigate("/"); }}
+                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                   >
+                     Logout
+                   </button>
+                 </li>
+               </ul>
+             </div>
+           )}
+         </div>
         ) : (
           <button
             onClick={() => navigate("/login")}
