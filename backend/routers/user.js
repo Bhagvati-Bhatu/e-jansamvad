@@ -4,8 +4,22 @@ const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const { setUser, getUser } = require('../authservice');
 const { checkLogin } = require('../middlewares/auth');
+const jwt = require('jsonwebtoken');
 
 
+
+router.get('/userInfo',  async (req, res) => {
+    const userId = req.user._id;
+    try {
+        const user = await User.findById(userId).select('-password');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json(user);
+    } catch (error) {
+        res.status(500).json({ message: 'Error fetching user info', error });
+    }
+})
 
 router.post('/signup', async (req, res)=>{
     const hashPassword = bcrypt.hashSync(req.body.password, 10);
@@ -29,28 +43,38 @@ router.post('/signup', async (req, res)=>{
         });
 })
 
-router.post('/login', async (req, res)=>{
-    const email = req.body.email;
-    const user = await User.findOne({email});
-    if(!user){
-        return res.status(404).json({message: "User not found"});
+router.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: 'User not found' });
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
+
+        // Generate JWT
+        const token = jwt.sign(
+            { id: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+        // Return token and user (without password)
+        const { password: _, ...userData } = user.toObject();
+
+        res.status(200).json({
+            message: 'Login successful',
+            token,
+            user: userData
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Error logging in', error });
     }
-    const validPassword = bcrypt.compareSync(req.body.password, user.password);
-    if(!validPassword){
-        return res.json({message: "Invalid Password"});
-    }
-    const token =  setUser(user);
-    res.cookie("token", token, {
-        httpOnly: false, // Prevents frontend JavaScript access
-        secure: true,  // Must be true in production (HTTPS)
-        sameSite: "None", // Required for cross-origin requests
-        path: "/", // Ensure it's accessible site-wide
-        maxAge: 2 * 60 * 60 * 1000, // 2 hours in milliseconds
-    });
-    
-    
-    return res.status(200).json({token});
-})
+});
 
 router.get("/validate", (req, res) => {
     const token = req.cookies.token;

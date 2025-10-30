@@ -1,9 +1,47 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { useEffect } from "react";
 
 const Navbar = () => {
   const [active, setActive] = useState("Home");
   const navigate = useNavigate();
+  const { isLoggedIn, logout } = useAuth();
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:5000/users/userInfo",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          setUser(data);
+        } else if (response.status === 401) {
+          console.warn("Token expired. Logging out...");
+          logout();
+          navigate("/login");
+        } else {
+          console.error("Failed to fetch user data");
+        }
+      } catch (error) {
+        console.error("Unexpected error:", error);
+      }
+    };
+
+    if (isLoggedIn) {
+      fetchUser();
+    }
+  }, [isLoggedIn, navigate, logout]);
 
   const navItems = [
     { name: "Home", path: "/" },
@@ -49,13 +87,26 @@ const Navbar = () => {
           ))}
         </ul>
       </nav>
-
-      <button
-        className="bg-orange-500 px-6 py-3 rounded-md hover:bg-orange-600 transition"
-        onClick={() => navigate("/login")}
-      >
-        Login
-      </button>
+      <div>
+        {isLoggedIn ? (
+          <button
+            onClick={() => {
+              logout();
+              navigate("/");
+            }}
+            className="bg-white text-blue-900 px-4 py-2 rounded-full font-semibold hover:bg-gray-200 transition"
+          >
+            Logout
+          </button>
+        ) : (
+          <button
+            onClick={() => navigate("/login")}
+            className="bg-white text-blue-900 px-4 py-2 rounded-full font-semibold hover:bg-gray-200 transition"
+          >
+            Login
+          </button>
+        )}
+      </div>
     </header>
   );
 };

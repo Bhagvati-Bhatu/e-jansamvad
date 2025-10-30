@@ -32,7 +32,7 @@ export default function LoginForm() {
     }    
     else {
       const errorData = await response.json();
-      setError(errorData.message || "Login failed. Please try again.");
+      // setError(errorData.message || "Login failed. Please try again.");
     }
   }
 
