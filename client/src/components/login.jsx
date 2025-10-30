@@ -1,12 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from 'react-toastify';
+import { useAuth } from "../../context/AuthContext";
 
 
 export default function LoginForm() {
+  const { setIsLoggedIn } = useAuth(); // Get the setter  
   const [securityCode, setSecurityCode] = useState("");
   const navigate = useNavigate();
   const [status, setStatus] = useState(null);
+  
 
   async function handleLogin() {
     const email = document.getElementById("email").value;
@@ -19,15 +22,17 @@ export default function LoginForm() {
       body: JSON.stringify({ email, password }),
       credentials: "include",
     });
-    if (response.status === 200) {
+    if (response.ok) {
       const data = await response.json();
-      const token = data.token;
-      console.log("data" + data)
-      // document.cookie = `token=${token}; Secure; SameSite=None; Domain=aspire-hackathon.onrender.com;`;
-      localStorage.setItem("showLoginToast", "true");
-      navigate("/homepage");
-    } else if (response.status === 404) {
-      setStatus("User not found");
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      setIsLoggedIn(true); // <--- This updates Header reactively
+      navigate("/");
+    }    
+    else {
+      const errorData = await response.json();
+      setError(errorData.message || "Login failed. Please try again.");
     }
   }
 

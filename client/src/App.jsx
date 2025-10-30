@@ -13,8 +13,9 @@ import Complaints from "./components/Complaints";
 import Contact from "./components/Contact";
 import { ToastContainer } from "react-toastify";
 import Header from './components/Header';
+import { AuthProvider } from '../context/AuthContext';
 
-function App() {
+function AppContent () {
   const location = useLocation();
   // Show Navbar only on specific paths
   const showNavbar = ["/", "/complaints", "/faqs", "/contact","/how-it-works"].includes(location.pathname);
@@ -44,4 +45,10 @@ function App() {
 }
 
 
-export default App;
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent/>
+    </AuthProvider>
+  )
+}
