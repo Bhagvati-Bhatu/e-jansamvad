@@ -14,6 +14,7 @@ import Contact from "./components/Contact";
 import { ToastContainer } from "react-toastify";
 import Header from './components/Header';
 import { AuthProvider } from '../context/AuthContext';
+import AutoLogoutWrapper from './components/AutoLogoutWrapper';
 
 function AppContent () {
   const location = useLocation();
@@ -21,7 +22,9 @@ function AppContent () {
   const showNavbar = ["/", "/complaints", "/faqs", "/contact","/how-it-works"].includes(location.pathname);
 
   return (
+
     <div>
+      <AutoLogoutWrapper />
       {showNavbar ? <Navbar /> : <Header />}
       {/* <ToastContainer autoClose={3000} position="top-center" /> */}
       <Routes>

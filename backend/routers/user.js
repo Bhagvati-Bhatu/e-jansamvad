@@ -4,16 +4,19 @@ const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const { setUser, getUser } = require('../authservice');
 const { checkLogin } = require('../middlewares/auth');
+const authMiddleware = require('../middlewares/authcheck');
 const jwt = require('jsonwebtoken');
 
 
 
-router.get('/userInfo',  async (req, res) => {
+router.get('/userInfo', authMiddleware,  async (req, res) => {
     const userId = req.user._id;
     try {
         const user = await User.findById(userId).select('-password');
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            console.log('User not found');
+            console.log(userId);
+            return res.status(403).json({ message: 'User not found' });
         }
         res.status(200).json(user);
     } catch (error) {
@@ -31,7 +34,7 @@ router.post('/signup', async (req, res)=>{
         phone: req.body.phone,
         address: req.body.address,
         city: req.body.city,
-        state: req.body.state,
+        state: req.body.state, 
         pincode: req.body.pincode
     });
         // console.log(user);

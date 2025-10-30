@@ -1,9 +1,17 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // Rehydrate login state from localStorage on app load
+    const storedLoginState = localStorage.getItem("isLoggedIn");
+    if (storedLoginState === "true") {
+      setIsLoggedIn(true);
+    }
+  }, []);
 
   const logout = () => {
     localStorage.removeItem("token");

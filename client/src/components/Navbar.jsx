@@ -9,11 +9,30 @@ const Navbar = () => {
   const { isLoggedIn, logout } = useAuth();
   const [user, setUser] = useState(null);
 
+
+  // const [open, setOpen] = useState(false);
+  // const ref = useRef(null);
+
+  // useEffect(() => {
+  //   function handleClick(e) {
+  //     if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+  //   }
+  //   function handleEsc(e) {
+  //     if (e.key === "Escape") setOpen(false);
+  //   }
+  //   document.addEventListener("mousedown", handleClick);
+  //   document.addEventListener("keydown", handleEsc);
+  //   return () => {
+  //     document.removeEventListener("mousedown", handleClick);
+  //     document.removeEventListener("keydown", handleEsc);
+  //   };
+  // }, []);
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const response = await fetch(
-          "http://localhost:5000/users/userInfo",
+          "http://localhost:5000/user/userInfo",
           {
             method: "GET",
             headers: {
@@ -25,6 +44,7 @@ const Navbar = () => {
 
         if (response.ok) {
           const data = await response.json();
+          // console.log(data);
           setUser(data);
         } else if (response.status === 401) {
           console.warn("Token expired. Logging out...");
@@ -89,15 +109,36 @@ const Navbar = () => {
       </nav>
       <div>
         {isLoggedIn ? (
+          <div className="relative inline-block text-left group">
           <button
-            onClick={() => {
-              logout();
-              navigate("/");
-            }}
             className="bg-white text-blue-900 px-4 py-2 rounded-full font-semibold hover:bg-gray-200 transition"
           >
-            Logout
+            {user ? user.email : 'user'}
           </button>
+          <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-10 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-800">
+            <ul className="py-1">
+              <li>
+                <button
+                  onClick={() => navigate("/dashboard")}
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                >
+                  Dashboard
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={() => {
+                    logout();
+                    navigate("/");
+                  }}
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                >
+                  Logout
+                </button>
+              </li>
+            </ul>
+          </div>
+        </div>
         ) : (
           <button
             onClick={() => navigate("/login")}
