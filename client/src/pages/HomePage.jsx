@@ -20,9 +20,11 @@ import { useNavigate } from 'react-router';
 import { deleteCookie, getCookie } from "../utilities/cookie";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useAuth } from '../../context/AuthContext';
 
 function Sidebar({ setActivePage }) {
   const navigate = useNavigate();
+
 
   function logout() {
     fetch("http://localhost:5000/user/logout", {
@@ -106,7 +108,7 @@ function HomePage() {
   useEffect(() => {
     const showToast = localStorage.getItem("showLoginToast");
     const profileUpdateToast = localStorage.getItem("showProfileUpdateToast");
-
+    
     if (showToast === "true") {
       toast.success("Welcome back!", { position: "top-center", autoClose: 3000 });
       setTimeout(() => {
@@ -114,33 +116,36 @@ function HomePage() {
       }, 3000);
     }
   }, []);
-
+  
+  const { isLoggedIn } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activePage, setActivePage] = useState("home");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const isAuthenticated = isLoggedIn;
   const navigate = useNavigate();
+  // setIsAuthenticated(isLoggedIn);
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/user/validate", {
-          credentials: "include"
-        });
+  // useEffect(() => {
+  //   const checkAuth = async () => {
+  //     try {
+  //       const res = await fetch("http://localhost:5000/user/validate", {
+  //         credentials: "include"
+  //       });
   
-        if (res.ok) {
-          console.log('cookie found');
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-        }
-      } catch (error) {
-        console.error("Error checking auth:", error);
-        setIsAuthenticated(false);
-      }
-    };
+  //       if (res.ok) {
+  //         console.log('cookie found');
+  //         setIsAuthenticated(true);
+  //       } else {
+  //         setIsAuthenticated(false);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error checking auth:", error);
+  //       setIsAuthenticated(false);
+  //     }
+  //   };
   
-    checkAuth();
-  }, []);
+  //   checkAuth();
+  // }, []);
 
   const renderContent = () => {
     if (!isAuthenticated) {
