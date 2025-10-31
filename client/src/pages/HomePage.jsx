@@ -24,20 +24,9 @@ import { useAuth } from '../../context/AuthContext';
 
 function Sidebar({ setActivePage }) {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
 
-  function logout() {
-    fetch("http://localhost:5000/user/logout", {
-      method: "GET",
-      credentials: "include",
-    })
-      .then(() => {
-        localStorage.setItem("showLoginToast", "true");
-        deleteCookie("token");
-        navigate("/");
-      })
-      .catch(err => console.error("Logout error", err));
-  }
 
   return (
     <div className="h-auto w-auto p-5 bg-gradient-to-b from-blue-900 to-blue-600 shadow-xl backdrop-blur-md text-white">
@@ -81,7 +70,10 @@ function Sidebar({ setActivePage }) {
           icon="🔌"
           text="Sign out"
           special
-          onClick={logout}
+          onClick={() => {
+            logout();
+            navigate("/");
+          }}
         />
       </ul>
     </div>

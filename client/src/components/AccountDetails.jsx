@@ -9,19 +9,23 @@ const AccountDetails = () => {
   useEffect(() => {
     console.log("Validating user...");
   
-    fetch("http://localhost:5000/user/validate", {
+    fetch("http://localhost:5000/user/userInfo", {
       method: "GET",
       credentials: "include", // <-- include cookies
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
     })
       .then((res) => {
         if (!res.ok) throw new Error("Unauthorized");
         return res.json();
       })
       .then((data) => {
-        console.log("User validated:", data);
-        console.log("User validated:", data.user);
-        console.log("User validated:", data.user.user);
-        setUser(data.user.user); // set the user object
+        // console.log("User validated:", data);
+        // console.log("User validated:", data.user);
+        // console.log("User validated:", data.user.user);
+        setUser(data); // set the user object
       })
       .catch((err) => {
         console.error("User not logged in", err);

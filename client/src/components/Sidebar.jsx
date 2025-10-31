@@ -1,13 +1,15 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
-  function logout(){
-    console.log("Logging out");
-    deleteCookie('token');
-    if(!document.cookie.includes('token')) navigate('/');
-  }
+  // function logout(){
+  //   console.log("Logging out");
+  //   deleteCookie('token');
+  //   if(!document.cookie.includes('token')) navigate('/');
+  // }
 
   return (
     <div className="w-64 p-5 rounded-2xl bg-gradient-to-b from-blue-900 to-blue-600 shadow-xl backdrop-blur-md text-white flex flex-col">
@@ -38,7 +40,7 @@ export default function Sidebar() {
         <SidebarItem
           text="Sign out"
           special
-          onClick={logout}
+          onClick={logout()}
         />
       </ul>
     </div>
