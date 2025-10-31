@@ -22,6 +22,7 @@ const ProfilePage = ({ setActivePage, showToast }) => {
         credentials: "include",
         headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({
             name, gender, state, district, pincode, address, mobile

@@ -110,10 +110,10 @@ router.get("/logout", async (req, res)=>{
     res.status(200).json({ message: "Logged out successfully" });
 })
 
-router.put("/profileUpdate", checkLogin, async (req, res) => {
+router.put("/profileUpdate", authMiddleware, async (req, res) => {
     try {
         // Extract user ID from token (checkLogin middleware sets `req.user`)
-        const userId = req.user.user._id;
+        const userId = req.user._id;
 
         // Extract profile update data from request body
         const { name, gender, state, district, pincode, address, mobile } = req.body;
