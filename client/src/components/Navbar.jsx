@@ -42,7 +42,7 @@ const Navbar = () => {
     const fetchUser = async () => {
       try {
         const response = await fetch(
-          "https://e-jansamvad-1.onrender.comuser/userInfo",
+          "https://e-jansamvad-1.onrender.com/user/userInfo",
           {
             method: "GET",
             headers: {

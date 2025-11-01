@@ -68,7 +68,7 @@ const SignupForm = () => {
 
   async function handleSignup() {
     console.log(formData);
-    const response = await fetch("https://e-jansamvad-1.onrender.comuser/signup", {
+    const response = await fetch("https://e-jansamvad-1.onrender.com/user/signup", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

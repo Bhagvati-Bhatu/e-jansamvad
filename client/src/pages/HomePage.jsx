@@ -120,7 +120,7 @@ function HomePage() {
   // useEffect(() => {
   //   const checkAuth = async () => {
   //     try {
-  //       const res = await fetch("https://e-jansamvad-1.onrender.comuser/validate", {
+  //       const res = await fetch("https://e-jansamvad-1.onrender.com/user/validate", {
   //         credentials: "include"
   //       });
   

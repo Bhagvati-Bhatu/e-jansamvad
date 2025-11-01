@@ -39,7 +39,7 @@ const GrievanceForm = () => {
       // }
 
       // Step 2: If not spam, submit the grievance
-      const response = await fetch("https://e-jansamvad-1.onrender.comgrievance", {
+      const response = await fetch("https://e-jansamvad-1.onrender.com/grievance", {
         method: "POST",
         body: JSON.stringify({
           department,
