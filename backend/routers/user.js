@@ -112,42 +112,42 @@ router.get("/logout", async (req, res)=>{
 
 router.put("/profileUpdate", authMiddleware, async (req, res) => {
     try {
-        // Extract user ID from token (checkLogin middleware sets `req.user`)
-        const userId = req.user._id;
-
-        // Extract profile update data from request body
-        const { name, gender, state, district, pincode, address, mobile } = req.body;
-
-        // Find the user and update details
-        const updatedUser = await User.findByIdAndUpdate(
-            userId, 
-            { name, gender, state, district, pincode, address, phone: mobile }, // Update fields
-            { new: true, runValidators: true } // Return updated user & validate data
-        );
-
-        if (!updatedUser) {
-            console.log("User not found!");
-            return res.status(404).json({ message: "User not found" });
-        }
-        const token =  setUser(updatedUser);
-    res.cookie("token", token, {
-        httpOnly: false, // Security: prevents frontend JavaScript access
-        secure: true, // Must be true in production with HTTPS
-        sameSite: "None", // Required for cross-origin requests
-        path: "/", // Ensure it's accessible site-wide
-    });
-
-        console.log("Updated User:", updatedUser);
-        return res.status(200).json({
-            message: "Profile updated successfully",
-            user: updatedUser
-        });
-
+      const userId = req.user._id;
+      const { name, gender, state, city, pincode, address, mobile } = req.body;
+  
+      const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { name, gender, state, city, pincode, address, phone: mobile },
+        { new: true, runValidators: true }
+      );
+  
+      if (!updatedUser) {
+        console.log("User not found!");
+        return res.status(404).json({ message: "User not found" });
+      }
+  
+      // create a new token (ensure setUser returns a token string)
+      const token = jwt.sign(
+        { id: userId },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+    );
+  
+      // Prepare sanitized user object (remove password)
+      const { password: _, ...userData } = updatedUser.toObject();
+  
+      console.log("Updated User:", userData);
+      return res.status(200).json({
+        message: "Profile updated successfully",
+        user: userData,
+        token, // <- return token so frontend can store in localStorage
+      });
     } catch (error) {
-        console.error("Error updating profile:", error);
-        return res.status(500).json({ message: "Server error", error });
+      console.error("Error updating profile:", error);
+      return res.status(500).json({ message: "Server error", error });
     }
-});
+  });
+  
 
 
 

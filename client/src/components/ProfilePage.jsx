@@ -12,7 +12,7 @@ const ProfilePage = ({ setActivePage, showToast }) => {
     const name = document.getElementById("name").value;
     const gender = document.getElementById("gender").value;
     const state = document.getElementById("state").value;
-    const district = document.getElementById("district").value;
+    const city = document.getElementById("district").value;
     const pincode = document.getElementById("pincode").value;
     const address = document.getElementById("address").value;
     const mobile = document.getElementById("mobile").value;
@@ -25,11 +25,15 @@ const ProfilePage = ({ setActivePage, showToast }) => {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({
-            name, gender, state, district, pincode, address, mobile
+            name, gender, state, city, pincode, address, mobile
         }),
     });
 
+    const data = await response.json();
+
     if (response.status === 200) {
+        if (data.token) localStorage.setItem("token", data.token);
+        if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.setItem("showProfileUpdateToast", "true");
         setActivePage("home");
         console.log("Profile updated successfullyyy");
