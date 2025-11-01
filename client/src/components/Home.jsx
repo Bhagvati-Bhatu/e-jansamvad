@@ -57,7 +57,7 @@ export default function Home() {
 
   useEffect(() => {
     const fetchGrievances = async () => {
-      const response = await fetch("http://localhost:5000/grievance", {
+      const response = await fetch("https://e-jansamvad-1.onrender.comgrievance", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

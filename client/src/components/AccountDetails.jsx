@@ -9,7 +9,7 @@ const AccountDetails = () => {
   useEffect(() => {
     console.log("Validating user...");
   
-    fetch("http://localhost:5000/user/userInfo", {
+    fetch("https://e-jansamvad-1.onrender.comuser/userInfo", {
       method: "GET",
       credentials: "include", // <-- include cookies
       headers: {
