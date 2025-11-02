@@ -117,7 +117,15 @@ const Navbar = () => {
           ))}
         </ul>
       </nav>
-      <div>
+      <div className="flex">
+        {/* <div> */}
+          <button
+            // onClick={() => navigate("/login")}
+            className="bg-white text-blue-900 px-4 py-2 rounded-full font-semibold hover:bg-gray-200 transition"
+          >
+            <a href="https://e-jansamvad-admin.vercel.app/clients">Admin Login</a>
+          </button>
+          {/* </div> */}
         {isLoggedIn ? (
            <div
            ref={ref}
@@ -173,7 +181,7 @@ const Navbar = () => {
             onClick={() => navigate("/login")}
             className="bg-white text-blue-900 px-4 py-2 rounded-full font-semibold hover:bg-gray-200 transition"
           >
-            Login
+           User Login
           </button>
         )}
       </div>
