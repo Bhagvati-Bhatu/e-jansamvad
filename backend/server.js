@@ -1,135 +1,159 @@
+// server.js
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const { connectDB } = require("./connection");
-const mongouri = process.env.MONGO_URI;
+const multer = require("multer");
+const cookieParser = require("cookie-parser");
+
 const userRouter = require("./routers/user");
 const grievanceRouter = require("./routers/grievance");
-const cookieParser = require("cookie-parser");
-const { MongoClient, GridFSBucket } = require("mongodb");
-const multer = require("multer");
 
-// Initialize Express
 const app = express();
 const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI;
 
-// Middleware
+if (!MONGO_URI) {
+  console.error("MONGO_URI is not set. Exiting.");
+  process.exit(1);
+}
+
+// Middlewares
 app.use(cookieParser());
-app.use(cors({
-    // allow all orgins
-    origin: true,
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    optionsSuccessStatus: 200
-}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cors({
+  origin: true, // consider restricting to your frontend origin in production
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 
-// Connect to MongoDB
-connectDB(mongouri);
-
-// let bucket;
-// mongoose.connection.once("open", () => {
-//     bucket = new GridFSBucket(mongoose.connection.db, { bucketName: "uploads" });
-//     console.log("✅ GridFSBucket initialized!");
-// });
-
-// Configure Multer (Memory Storage for direct GridFS upload)
+// Multer memory storage (for GridFS)
 const storage = multer.memoryStorage();
 const upload = multer({
-    storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit, adjust as needed
-    fileFilter: (req, file, cb) => {
-      // Accept only PDFs
-      if (file.mimetype === 'application/pdf') cb(null, true)
-      else cb(new Error('Only PDFs allowed'), false)
-    }
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype === 'application/pdf') cb(null, true);
+    else cb(new Error('Only PDFs allowed'), false);
+  }
+});
+
+// GridFS bucket variable (initialized after DB connect)
+let bucket = null;
+
+// Helper: Promise for upload finish
+function waitForStreamFinish(stream) {
+  return new Promise((resolve, reject) => {
+    stream.on("finish", resolve);
+    stream.on("error", reject);
   });
+}
 
-  let bucket;
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(conn => {
-    bucket = new GridFSBucket(conn.connection.db, { bucketName: 'uploads' });
-    console.log('Mongo connected & GridFS bucket created');
-  })
-  .catch(err => console.error('Mongo connection error', err));
-
-// 📌 **Upload File (POST /upload)**
+/**
+ * Upload endpoint: stores file into GridFS and returns filename & fileId
+ * Expects multipart/form-data with field "file"
+ */
 app.post("/upload", upload.single("file"), async (req, res) => {
-    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
-  
-    try {
-      const uploadStream = bucket.openUploadStream(req.file.originalname, {
-        contentType: req.file.mimetype
-      });
-      uploadStream.end(req.file.buffer);
-  
-      uploadStream.on("finish", () => {
-        console.log("File uploaded:", req.file.originalname);
-        return res.status(201).json({ message: "File uploaded successfully", filename: req.file.originalname });
-      });
-  
-      uploadStream.on("error", (err) => {
-        console.error("Upload error:", err);
-        return res.status(500).json({ error: "File upload failed" });
-      });
-    } catch (err) {
-      console.error("Error uploading file:", err);
-      return res.status(500).json({ error: "Internal server error" });
+  try {
+    if (!bucket) {
+      return res.status(503).json({ error: "Storage not ready. Try again shortly." });
     }
-  });
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
 
-// 📌 **Retrieve and Open File (GET /file/:filename)**
+    // Use a unique filename to avoid collisions
+    const filename = `${Date.now()}-${req.file.originalname}`;
+
+    const uploadStream = bucket.openUploadStream(filename, {
+      contentType: req.file.mimetype
+    });
+
+    // write and close
+    uploadStream.end(req.file.buffer);
+
+    await waitForStreamFinish(uploadStream);
+
+    return res.status(201).json({
+      message: "File uploaded successfully",
+      filename,
+      fileId: uploadStream.id.toString()
+    });
+  } catch (err) {
+    console.error("❌ Upload error:", err);
+    return res.status(500).json({ error: "File upload failed", details: err.message });
+  }
+});
+
+/**
+ * Retrieve file by filename (inline view)
+ */
 app.get("/file/:filename", async (req, res) => {
-    try {
-        console.log("🔍 Searching for file:", req.params.filename);
-        const file = await mongoose.connection.db.collection("uploads.files").findOne({ filename: req.params.filename });
-        if (!file) {
-            return res.status(404).json({ error: "File not found" });
-        }
+  try {
+    if (!bucket) return res.status(503).json({ error: "Storage not ready" });
 
-        res.set("Content-Type", "application/pdf");
-        res.set("Content-Disposition", `inline; filename="${file.filename}"`);
+    const file = await mongoose.connection.db.collection("uploads.files").findOne({ filename: req.params.filename });
+    if (!file) return res.status(404).json({ error: "File not found" });
 
-        const downloadStream = bucket.openDownloadStream(file._id);
-        downloadStream.pipe(res);
-    } catch (err) {
-        console.error("❌ Error retrieving file:", err);
-        res.status(500).json({ error: "Internal server error" });
-    }
+    res.set("Content-Type", file.contentType || "application/pdf");
+    res.set("Content-Disposition", `inline; filename="${file.filename}"`);
+
+    const downloadStream = bucket.openDownloadStream(file._id);
+    downloadStream.pipe(res);
+  } catch (err) {
+    console.error("❌ Error retrieving file:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
-// 📌 **Download File as Attachment (GET /download/:filename)**
+/**
+ * Download endpoint (attachment)
+ */
 app.get("/download/:filename", async (req, res) => {
-    try {
-        const file = await mongoose.connection.db.collection("uploads.files").findOne({ filename: req.params.filename });
-        if (!file) {
-            return res.status(404).json({ error: "File not found" });
-        }
+  try {
+    if (!bucket) return res.status(503).json({ error: "Storage not ready" });
 
-        res.set("Content-Type", "application/pdf");
-        res.set("Content-Disposition", `attachment; filename="${file.filename}"`);
+    const file = await mongoose.connection.db.collection("uploads.files").findOne({ filename: req.params.filename });
+    if (!file) return res.status(404).json({ error: "File not found" });
 
-        const downloadStream = bucket.openDownloadStream(file._id);
-        downloadStream.pipe(res);
-        console.log("📥 File sent for download:", req.params.filename);
-    } catch (err) {
-        console.error("❌ Error downloading file:", err);
-        res.status(500).json({ error: "Internal server error" });
-    }
+    res.set("Content-Type", file.contentType || "application/pdf");
+    res.set("Content-Disposition", `attachment; filename="${file.filename}"`);
+
+    const downloadStream = bucket.openDownloadStream(file._id);
+    downloadStream.pipe(res);
+    console.log("📥 File sent for download:", req.params.filename);
+  } catch (err) {
+    console.error("❌ Error downloading file:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
 });
 
-//adding get
-app.get("/", (req, res) => {
-  res.send("✅ E-JanSamvad backend is running successfully!");
-});
+// Root health check
+app.get("/", (req, res) => res.send("✅ E-JanSamvad backend is running successfully!"));
 
-
-// Routes
+// Mount other routers (they rely on mongoose connection but can be mounted now)
 app.use("/user", userRouter);
 app.use("/grievance", grievanceRouter);
 
-// Start Server
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+// Start server AFTER MongoDB connects and bucket is created
+async function start() {
+  try {
+    await mongoose.connect(MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+
+    // Initialize GridFSBucket using mongoose's native db
+    bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: "uploads" });
+    console.log("✅ Mongo connected & GridFS bucket initialized.");
+
+    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+  } catch (err) {
+    console.error("Failed to connect to MongoDB:", err);
+    process.exit(1);
+  }
+}
+
+start();
