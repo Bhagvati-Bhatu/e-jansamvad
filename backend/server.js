@@ -48,6 +48,7 @@ const upload = multer({
     else cb(new Error('Only PDFs allowed'), false);
   }
 });
+const uploadVoice = multer({ storage });
 
 // GridFS bucket variable (initialized after DB connect)
 let bucket = null;
@@ -143,7 +144,7 @@ app.get("/download/:filename", async (req, res) => {
 
 
 // Upload audio from frontend → AssemblyAI
-app.post("/api/transcribe", upload.single("audio"), async (req, res) => {
+app.post("/api/transcribe", uploadVoice.single("audio"), async (req, res) => {
     try {
       if (!req.file || !req.file.buffer) {
         return res.status(400).json({ error: "No audio file uploaded" });

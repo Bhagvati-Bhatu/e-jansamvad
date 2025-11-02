@@ -46,7 +46,7 @@ const Chatbot = () => {
       const formData = new FormData();
       formData.append("audio", audioBlob, "recording.webm");
   
-      const response = await axios.post("https://e-jansamvad-1.onrender.com/api/transcribe", formData, {
+      const response = await axios.post("http://localhost:5000/api/transcribe", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
