@@ -119,12 +119,14 @@ const Navbar = () => {
       </nav>
       <div className="flex gap-1">
         {/* <div> */}
+        {isLoggedIn &&
           <button
             // onClick={() => navigate("/login")}
             className="bg-white text-blue-900 px-2 py-2 rounded-full font-semibold hover:bg-gray-200 transition"
           >
             <a href="https://e-jansamvad-admin.vercel.app/clients">Admin Login</a>
           </button>
+      }
           {/* </div> */}
         {isLoggedIn ? (
            <div
@@ -167,7 +169,7 @@ const Navbar = () => {
                  <li>
                    <button
                      onClick={() => { setOpen(false); logout(); navigate("/"); }}
-                     className="block px-2 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                    >
                      Logout
                    </button>
