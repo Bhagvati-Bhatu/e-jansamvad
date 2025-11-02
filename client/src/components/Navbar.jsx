@@ -119,7 +119,7 @@ const Navbar = () => {
       </nav>
       <div className="flex gap-1">
         {/* <div> */}
-        {isLoggedIn &&
+        {!isLoggedIn &&
           <button
             // onClick={() => navigate("/login")}
             className="bg-white text-blue-900 px-2 py-2 rounded-full font-semibold hover:bg-gray-200 transition"
