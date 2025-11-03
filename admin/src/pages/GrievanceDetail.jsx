@@ -268,7 +268,7 @@ function GrievanceDetail() {
           </p>
 
           <p className="text-lg flex items-center">
-            <strong>AI Assistance Used:</strong>
+            <strong>AI Assistance Used For Resolution:</strong>
             <input
               type="checkbox"
               checked={!!grievance.aiResolved}
@@ -283,6 +283,16 @@ function GrievanceDetail() {
           >
             <strong>View Uploaded Document</strong>
           </p>
+
+        <p className="text-lg hover:text-blue-700 hover:underline cursor-pointer">
+            <strong>AI Spam Detected:</strong>{" "}
+            {grievance.isSpam ? (
+              <span className="text-red-600 font-semibold">Yes</span>
+            ) : (
+              <span className="text-green-600 font-semibold">No</span>
+            )}
+        </p>
+
         </div>
 
         <div className="space-y-6">
