@@ -29,7 +29,7 @@ function Sidebar({ setActivePage }) {
 
 
   return (
-    <div className="h-auto w-auto p-5 bg-gradient-to-b from-blue-900 to-blue-600 shadow-xl backdrop-blur-md text-white">
+    <div className="h-auto w-auto p-5 bg-gradient-to-b border-2   rounded-3xl from-blue-900 to-blue-600 shadow-xl backdrop-blur-md text-white">
       <ul className="space-y-3">
         <SidebarItem
           icon="💬"
@@ -202,9 +202,9 @@ function HomePage() {
       </div>
 
       {isAuthenticated && (
-        <div className="flex flex-col lg:flex-row flex-grow">
+        <div className="flex flex-col lg:flex-row flex-grow ">
           {/* Desktop Sidebar */}
-          <aside className="hidden lg:block w-1/4 xl:w-1/5 bg-white shadow-md lg:min-h-screen">
+          <aside className=" lg:block w-64 xl:w-72 bg-gradient-to-b m-4">            
             <Sidebar setActivePage={setActivePage} />
           </aside>
 
