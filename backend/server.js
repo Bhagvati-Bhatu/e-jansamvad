@@ -24,7 +24,7 @@ const AAI_BASE = "https://api.assemblyai.com/v2";
 
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
-const GEMINI_API_KEY = "AIzaSyCum4Qx53qDAgxsU-kRXW97wDftu4lZnSc";
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyCKL_Fd7JsZDkpq8qthSxVoq4ZaO0A07rc";
 
 // ===== Jina AI for Embeddings =====
 const JINA_API_KEY = process.env.JINA_API_KEY;
@@ -34,19 +34,19 @@ const JINA_EMBEDDING_MODEL = "jina-embeddings-v2-base-en";
 // ===== Groq for Chat =====
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_CHAT_URL = "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_CHAT_MODEL = "llama-3.1-8b-instant";
+const GROQ_CHAT_MODEL = "llama3-8b-8192";
 
-// ===== Pinecone Client (MODERN SDK) =====
-const { Pinecone } = require("@pinecone-database/pinecone");
-let pineconeIndex = null;
+// ===== Pinecone Client =====
+const { PineconeClient } = require("@pinecone-database/pinecone");
+const pinecone = new PineconeClient();
 let pineconeReady = false;
-
 const PINECONE_API_KEY = process.env.PINECONE_API_KEY;
-const PINECONE_INDEX_NAME = process.env.PINECONE_INDEX || "";
+const PINECONE_ENVIRONMENT = process.env.PINECONE_ENVIRONMENT;
+const PINECONE_INDEX = process.env.PINECONE_INDEX || "";
 
 // ===== Guards =====
-if (!MONGO_URI || !JINA_API_KEY || !GROQ_API_KEY || !PINECONE_API_KEY) {
-  console.error("❌ One or more required environment variables are missing.");
+if (!MONGO_URI) {
+  console.error("❌ MONGO_URI is not set. Exiting.");
   process.exit(1);
 }
 
@@ -65,6 +65,8 @@ app.use(
 
 // ===== Multer (memory) =====
 const memoryStorage = multer.memoryStorage();
+
+// For PDF upload (RAG)
 const uploadPdf = multer({
   storage: memoryStorage,
   limits: { fileSize: 10 * 1024 * 1024 },
@@ -74,7 +76,10 @@ const uploadPdf = multer({
   }
 }).single("pdf_files");
 
+// For general file upload (GridFS)
 const uploadFile = multer({ storage: memoryStorage }).single("file");
+
+// For voice upload (AssemblyAI)
 const uploadVoice = multer({ storage: memoryStorage }).single("audio");
 
 // ===== GridFS =====
@@ -223,9 +228,7 @@ app.post("/api/transcribe", (req, res) => {
    ========================= */
 
 app.post("/api/gemini/generate", async (req, res) => {
-  console.log("hi2")
   try {
-    console.log("hi1")
     const { prompt } = req.body || {};
     if (!prompt) return res.status(400).json({ error: "Missing prompt" });
 
@@ -286,18 +289,31 @@ async function createJinaEmbeddings(texts) {
   return response.data.data.map((item) => item.embedding);
 }
 
-// --- Pinecone Helpers (Modern SDK) ---
-async function pineconeUpsert(vectors) {
-  await pineconeIndex.upsert(vectors);
+// --- Pinecone Helpers ---
+async function pineconeUpsert(index, vectors) {
+  // FIXED: Use the correct property structure for the older Pinecone client
+  const batchSize = 50;
+  for (let i = 0; i < vectors.length; i += batchSize) {
+    const batch = vectors.slice(i, i + batchSize);
+    try {
+      // Try the newer API shape first
+      await index.upsert({ vectors: batch });
+    } catch (err) {
+      // Fall back to older API shape
+      await index.upsert({ upsertRequest: { vectors: batch } });
+    }
+  }
 }
 
-async function pineconeQuery(vector, topK = 4) {
-  const result = await pineconeIndex.query({
-    vector,
-    topK,
-    includeMetadata: true
-  });
-  return result.matches || [];
+async function pineconeQuery(index, vector, topK = 4) {
+  try {
+    const r = await index.query({ vector, topK, includeMetadata: true });
+    return r.matches || [];
+  } catch (err) {
+    // Try alternate shape
+    const r2 = await index.query({ queryRequest: { vector, topK, includeMetadata: true } });
+    return r2.matches || [];
+  }
 }
 
 /* =========================
@@ -329,8 +345,24 @@ app.post("/init_rag", (req, res) => {
       }));
 
       if (!pineconeReady) return res.status(503).json({ error: "Vector DB not ready." });
-
-      await pineconeUpsert(vectors);
+      
+      console.log("🔍 Getting Pinecone index:", PINECONE_INDEX);
+      const index = pinecone.Index(PINECONE_INDEX);
+      
+      // CLEAR OLD DATA: Delete all vectors before uploading new PDF
+      console.log("🗑️ Clearing previous PDF data from Pinecone...");
+      try {
+        await index.delete1({ deleteAll: true });
+        console.log("✅ Old data cleared successfully");
+      } catch (deleteErr) {
+        console.warn("⚠️ Could not clear old data:", deleteErr.message);
+        // Continue anyway - worst case is mixed results
+      }
+      
+      console.log("🔍 Attempting to upsert", vectors.length, "vectors");
+      console.log("🔍 First vector dimension:", vectors[0].values.length);
+      
+      await pineconeUpsert(index, vectors);
 
       console.log(`✅ Indexed ${vectors.length} vectors to Pinecone via Jina AI.`);
       return res.json({ ok: true, inserted: vectors.length });
@@ -346,13 +378,23 @@ app.post("/ask_question", async (req, res) => {
     const { query } = req.body || {};
     if (!query) return res.status(400).json({ error: "Missing query" });
 
+    // 1. Create query embedding with Jina AI
     const qEmbedding = (await createJinaEmbeddings([query]))[0];
 
+    // 2. Query Pinecone
     if (!pineconeReady) return res.status(503).json({ error: "Vector DB not ready." });
-    const matches = await pineconeQuery(qEmbedding, 4);
+    const index = pinecone.Index(PINECONE_INDEX);
+    const matches = await pineconeQuery(index, qEmbedding, 4);
     const context = matches.map((m) => m.metadata?.text || "").join("\n\n---\n\n");
 
-    const prompt = `Using the following context, answer the question.\nContext:\n${context}\n\nQuestion: ${query}\n\nAnswer:`;
+    // 3. Generate answer with Groq
+    const prompt = `Using the following context, answer the question.
+Context:
+${context}
+
+Question: ${query}
+
+Answer:`;
 
     const groqResponse = await axios.post(
       GROQ_CHAT_URL,
@@ -399,15 +441,27 @@ async function start() {
     bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: "uploads" });
     console.log("✅ Mongo connected & GridFS bucket initialized.");
 
-    if (PINECONE_API_KEY) {
+    if (PINECONE_API_KEY && PINECONE_ENVIRONMENT) {
       try {
-        const pc = new Pinecone({ apiKey: PINECONE_API_KEY });
-        pineconeIndex = pc.index(PINECONE_INDEX_NAME);
+        console.log("🔍 Attempting Pinecone init with environment:", PINECONE_ENVIRONMENT);
+        console.log("🔍 Using index:", PINECONE_INDEX);
+        
+        await pinecone.init({
+          apiKey: PINECONE_API_KEY,
+          environment: PINECONE_ENVIRONMENT
+        });
         pineconeReady = true;
         console.log("✅ Pinecone initialized successfully");
+        
+        // Test the index connection
+        const testIndex = pinecone.Index(PINECONE_INDEX);
+        console.log("✅ Index object created");
       } catch (err) {
         pineconeReady = false;
-        console.error("❌ Failed to initialize Pinecone:", err);
+        console.error("❌ Failed to initialize Pinecone:");
+        console.error("Error name:", err.name);
+        console.error("Error message:", err.message);
+        console.error("Full error:", err);
       }
     }
 

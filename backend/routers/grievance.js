@@ -5,7 +5,7 @@ const authMiddleware = require('../middlewares/authcheck');
 const axios = require("axios");
 
 
-const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+const MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash-lite";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 const API_KEY = process.env.GEMINI_API_KEY;
 
@@ -116,6 +116,7 @@ router.get("/allGrievances", async (req, res) => {
 });
 
 router.post("/spam-check", async (req, res) => {
+    console.log(GEMINI_URL);
     try {
       const { text } = req.body;
       if (!text || !text.trim()) return res.status(400).json({ error: "Missing text" });
