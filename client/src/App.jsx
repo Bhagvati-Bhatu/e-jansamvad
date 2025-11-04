@@ -25,7 +25,7 @@ function AppContent () {
 
     <div>
       <AutoLogoutWrapper />
-      {showNavbar ? <Navbar /> : <Header />}
+      {showNavbar && <Navbar />}
       {/* <ToastContainer autoClose={3000} position="top-center" /> */}
       <Routes>
         <Route path="/" element={<LandingPage />} />
