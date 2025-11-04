@@ -99,7 +99,7 @@ const ClientTable = () => {
           ["Complainant Email", grievance.complainantEmail],
           ["AI Resolved", grievance.aiResolved ? "Yes" : "No"],
           ["Current Status", grievance.currentStatus],
-          ["AI Proposed Solution", aiSolution],
+        //   ["AI Proposed Solution", aiSolution],
         ];
         doc.autoTable({ startY: 30, head: [tableColumn], body: tableRows });
         doc.save(`Grievance_${grievance.grievanceCode}.pdf`);

@@ -228,7 +228,8 @@ function GrievanceDetail() {
   };
 
   return (
-    <div className="w-full mx-auto mt-10 p-8 bg-white shadow-lg rounded-3xl border border-gray-200">
+    <div className="w-full mx-auto mt-10 p-8 bg-white shadow-lg rounded-3xl border border-gray-200"
+    style={{ zoom: "0.9" }}>
       {showConfetti && (
         <div className="fixed inset-0 z-50 pointer-events-none">
           <Confetti numberOfPieces={600} recycle={false} />
@@ -296,7 +297,7 @@ function GrievanceDetail() {
         </div>
 
         <div className="space-y-6">
-          <div className="p-5 bg-gray-100 rounded-xl">
+          <div className="p-5 bg-gray-100 rounded-xl border-2 border-black">
             <h3 className="text-lg font-semibold text-gray-700 mb-3">📌 Grievance Progress</h3>
 
             <div className="flex flex-wrap gap-3 mb-4">
