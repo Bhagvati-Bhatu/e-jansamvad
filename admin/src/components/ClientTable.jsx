@@ -10,6 +10,7 @@ const ClientTable = () => {
     const [loadingGrievance, setLoadingGrievance] = useState(null);
     const [grievances, setGrievances] = useState([]);
     const [filteredGrievances, setFilteredGrievances] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     // Pagination States
     const [currentPage, setCurrentPage] = useState(1);
@@ -17,6 +18,7 @@ const ClientTable = () => {
 
     useEffect(() => {
         const fetchGrievances = async () => {
+            setIsLoading(true);
             try {
                 const response = await fetch("https://e-jansamvad-1.onrender.com/grievance/allGrievances", {
                     method: "GET",
@@ -32,82 +34,59 @@ const ClientTable = () => {
                 }
             } catch (error) {
                 console.error("Network error:", error);
+            } finally {
+                setIsLoading(false);
             }
         };
         fetchGrievances();
     }, []);
 
-    
     const fetchAISolution = async (description) => {
         try {
-          const response = await axios({
-            url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyCHK_9m7dwti-kYYWmr-ciR-Kp9_QTgvOc",
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            data: {
-              contents: [
-                {
-                  parts: [{ text: `Analyze the problem and provide a detailed solution with highlighted points regarding how to solve the problem from the perspective of a Government officer: ${description}` }],
+            const response = await axios({
+                url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyCHK_9m7dwti-kYYWmr-ciR-Kp9_QTgvOc",
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
                 },
-              ],
-            },
-          });
-          return response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "Error generating AI solution";
-        } catch (error) {
-          console.error("Error fetching AI solution:", error);
-          return "Error generating AI solution";
-        }
-      };
-
-      useEffect(() => {
-        const fetchGrievances = async () => {
-          try {
-            const response = await fetch("https://e-jansamvad-1.onrender.com/grievance/allGrievances", {
-              method: "GET",
-              headers: { "Content-Type": "application/json" },
-              credentials: "include",
+                data: {
+                    contents: [
+                        {
+                            parts: [{ text: `Analyze the problem and provide a detailed solution with highlighted points regarding how to solve the problem from the perspective of a Government officer: ${description}` }],
+                        },
+                    ],
+                },
             });
-            if (response.ok) {
-              const data = await response.json();
-              setGrievances(data);
-              setFilteredGrievances(data);
-            } else {
-              console.error("Error fetching grievances:", response.statusText);
-            }
-          } catch (error) {
-            console.error("Network error:", error);
-          }
-        };
-        fetchGrievances();
-      }, []);
+            return response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "Error generating AI solution";
+        } catch (error) {
+            console.error("Error fetching AI solution:", error);
+            return "Error generating AI solution";
+        }
+    };
 
-      const generatePDF = async (grievance) => {
+    const generatePDF = async (grievance) => {
         const aiSolution = await fetchAISolution(grievance.description);
-    
+
         const doc = new jsPDF();
         doc.setFontSize(16);
         doc.text("Grievance Report", 14, 20);
-    
+
         const tableColumn = ["Field", "Value"];
         const tableRows = [
-          ["Grievance Code", grievance.grievanceCode],
-          ["Complainant Name", grievance.complainantName],
-          ["Description", grievance.description || "No description available"],
-          ["Date of Receipt", new Date(grievance.createdAt).toISOString().split("T")[0]],
-          ["Complainant Email", grievance.complainantEmail],
-          ["AI Resolved", grievance.aiResolved ? "Yes" : "No"],
-          ["Current Status", grievance.currentStatus],
-        //   ["AI Proposed Solution", aiSolution],
+            ["Grievance Code", grievance.grievanceCode],
+            ["Complainant Name", grievance.complainantName],
+            ["Description", grievance.description || "No description available"],
+            ["Date of Receipt", new Date(grievance.createdAt).toISOString().split("T")[0]],
+            ["Complainant Email", grievance.complainantEmail],
+            ["AI Resolved", grievance.aiResolved ? "Yes" : "No"],
+            ["Current Status", grievance.currentStatus],
         ];
         doc.autoTable({ startY: 30, head: [tableColumn], body: tableRows });
         doc.save(`Grievance_${grievance.grievanceCode}.pdf`);
-      };
+    };
 
-    // Handle AI Resolved Toggle
     const toggleAIResolved = (index, event) => {
-        event.stopPropagation(); // Prevent row click
+        event.stopPropagation();
         const updatedGrievances = [...filteredGrievances];
         updatedGrievances[index].aiResolved = !updatedGrievances[index].aiResolved;
         setFilteredGrievances(updatedGrievances);
@@ -130,6 +109,8 @@ const ClientTable = () => {
         }
     };
 
+    // ❌ REMOVED: Full-screen loading check
+
     return (
         <div className="container mx-auto px-4">
             <FilterTabs grievances={grievances} setFilteredGrievances={setFilteredGrievances} />
@@ -145,13 +126,17 @@ const ClientTable = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {currentGrievances.length > 0 ? (
+                        {isLoading ? (
+                            <tr>
+                                <td colSpan="7" className="text-center py-4 text-gray-500">Loading...</td>
+                            </tr>
+                        ) : currentGrievances.length > 0 ? (
                             currentGrievances.map((client, index) => (
                                 <tr
                                     key={index}
                                     className={`border-b hover:bg-gray-100 transition duration-200 ${
                                         index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                                    }`} // Striped Rows
+                                    }`}
                                     onClick={() => navigate(`/grievance/${client.grievanceCode}`)}
                                 >
                                     <td className="py-3 px-4">{client.grievanceCode}</td>
@@ -162,30 +147,17 @@ const ClientTable = () => {
                                     <td className="py-3 px-4 text-center">
                                         <input
                                             type="checkbox"
-                                            checked={client.aiResolved} // ✅ Checkbox is controlled by `aiResolved`
-                                            readOnly // ✅ Prevents manual changes
-                                            className="w-5 h-5 cursor-default" // ✅ Removes pointer cursor
+                                            checked={client.aiResolved}
+                                            readOnly
+                                            className="w-5 h-5 cursor-default"
                                         />
                                     </td>
-
                                     <td className="py-3 px-4">{client.currentStatus}</td>
-                                    {/* <td className="py-3 px-4">
-                                        <button
-                                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center justify-center transition duration-200"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                generatePDF(client);
-                                            }}
-                                            disabled={loadingGrievance === client.grievanceCode}
-                                        >
-                                            {loadingGrievance === client.grievanceCode ? "Downloading..." : "Download"}
-                                        </button>
-                                    </td> */}
                                 </tr>
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="8" className="text-center py-4 text-gray-500">No grievances found</td>
+                                <td colSpan="7" className="text-center py-4 text-gray-500">No grievances found</td>
                             </tr>
                         )}
                     </tbody>

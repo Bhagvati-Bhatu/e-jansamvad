@@ -43,6 +43,9 @@ let pineconeReady = false;
 const PINECONE_API_KEY = process.env.PINECONE_API_KEY;
 const PINECONE_INDEX_NAME = process.env.PINECONE_INDEX || "";
 
+
+const nodemailer = require("nodemailer");
+
 // ===== Guards =====
 if (!MONGO_URI) {
   console.error("❌ MONGO_URI is not set. Exiting.");
@@ -61,6 +64,15 @@ app.use(
     allowedHeaders: ["Content-Type", "Authorization"]
   })
 );
+
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER, // Your Gmail address
+    pass: process.env.EMAIL_PASS  // Your Gmail App Password
+  }
+});
 
 // ===== Multer (memory) =====
 const memoryStorage = multer.memoryStorage();
@@ -408,6 +420,38 @@ Answer:`;
   } catch (err) {
     console.error("ask_question error:", err.response ? err.response.data : err.message);
     return res.status(500).json({ error: "Failed to get answer from AI." });
+  }
+});
+
+// ===== Contact Form Email Route =====
+app.post("/api/contact", async (req, res) => {
+  try {
+    const { firstName, lastName, email, phone, countryCode, message } = req.body;
+
+    if (!firstName || !lastName || !email || !message) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: "ajoshi2_be23@thapar.edu",
+      subject: `New Contact Form Submission from ${firstName} ${lastName}`,
+      html: `
+        <h2>New Contact Form Submission</h2>
+        <p><strong>Name:</strong> ${firstName} ${lastName}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Phone:</strong> ${countryCode || "+91"} ${phone || "Not provided"}</p>
+        <p><strong>Message:</strong></p>
+        <p>${message}</p>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    return res.json({ success: true, message: "Email sent successfully!" });
+  } catch (err) {
+    console.error("Email error:", err);
+    return res.status(500).json({ error: "Failed to send email" });
   }
 });
 
