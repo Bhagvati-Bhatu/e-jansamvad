@@ -75,7 +75,7 @@ export default function LoginForm() {
 
         {/* Username/Email/Mobile Input */}
         <div className="mt-6">
-          <label className="text-sm font-semibold text-gray-600">Email / Mobile No</label>
+          <label className="text-sm font-semibold text-gray-600">Email</label>
           <div className="flex items-center border rounded-lg p-2 mt-1 bg-gray-100 focus-within:ring-2 focus-within:ring-indigo-400">
             <input
               type="text"
@@ -117,8 +117,8 @@ export default function LoginForm() {
 
         {/* Links */}
         <div className="text-center mt-4 text-sm text-gray-600">
-          <a href="#" className="hover:text-indigo-700 transition">Forgot Password</a> | 
-          <a href="#" className="hover:text-indigo-700 ml-2 transition">Forgot Username</a>
+          {/* <a href="#" className="hover:text-indigo-700 transition">Forgot Password</a> | 
+          <a href="#" className="hover:text-indigo-700 ml-2 transition">Forgot Username</a> */}
           <br />
           <a href="/signup" className="hover:text-indigo-700 font-medium transition">
             Click here to Sign Up

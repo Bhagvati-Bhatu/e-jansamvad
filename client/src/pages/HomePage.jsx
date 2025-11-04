@@ -61,11 +61,11 @@ function Sidebar({ setActivePage }) {
           text="Edit Profile"
           onClick={() => setActivePage("profile")}
         />
-        <SidebarItem
+        {/* <SidebarItem
           icon="🔒"
           text="Change Password"
           onClick={() => setActivePage("changePassword")}
-        />
+        /> */}
         <SidebarItem
           icon="🔌"
           text="Sign out"

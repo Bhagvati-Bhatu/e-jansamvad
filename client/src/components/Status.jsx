@@ -24,7 +24,7 @@ export default function Status() {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 p-6">
+    <div className="min-h-[80vh] flex items-center justify-center p-6">
       <div className="max-w-lg w-full bg-white/80 backdrop-blur-md border border-gray-200 shadow-2xl rounded-2xl p-8">
         {/* Title */}
         <div className="text-center mb-6">

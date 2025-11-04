@@ -34,9 +34,9 @@ export default function Sidebar() {
         <SidebarItem
           text={<Link to="/profile" className="no-underline text-inherit">Edit Profile</Link>}
         />
-        <SidebarItem
+        {/* <SidebarItem
           text={<Link to="/change-password" className="no-underline text-inherit">Change Password</Link>}
-        />
+        /> */}
         <SidebarItem
           text="Sign out"
           special

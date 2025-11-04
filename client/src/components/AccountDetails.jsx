@@ -57,7 +57,7 @@ const AccountDetails = () => {
     : [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 p-8">
+    <div className="min-h-screen p-8">
       <div className=" min-h-[65vh] max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-6 flex">
         {/* Left Sidebar */}
         <div className="w-1/4 pr-8 border-r">
