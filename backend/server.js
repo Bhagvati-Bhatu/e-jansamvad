@@ -24,7 +24,7 @@ const AAI_BASE = "https://api.assemblyai.com/v2";
 
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyCKL_Fd7JsZDkpq8qthSxVoq4ZaO0A07rc";
+const GEMINI_API_KEY = "AIzaSyCum4Qx53qDAgxsU-kRXW97wDftu4lZnSc";
 
 // ===== Jina AI for Embeddings =====
 const JINA_API_KEY = process.env.JINA_API_KEY;
@@ -223,7 +223,9 @@ app.post("/api/transcribe", (req, res) => {
    ========================= */
 
 app.post("/api/gemini/generate", async (req, res) => {
+  console.log("hi2")
   try {
+    console.log("hi1")
     const { prompt } = req.body || {};
     if (!prompt) return res.status(400).json({ error: "Missing prompt" });
 
