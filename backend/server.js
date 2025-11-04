@@ -34,7 +34,7 @@ const JINA_EMBEDDING_MODEL = "jina-embeddings-v2-base-en";
 // ===== Groq for Chat =====
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_CHAT_URL = "https://api.groq.com/openai/v1/chat/completions";
-const GROQ_CHAT_MODEL = "llama3-8b-8192";
+const GROQ_CHAT_MODEL = "llama-3.1-8b-instant";
 
 // ===== Pinecone Client (Modern SDK) =====
 const { Pinecone } = require("@pinecone-database/pinecone");
