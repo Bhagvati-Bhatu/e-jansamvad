@@ -284,7 +284,7 @@ function GrievanceDetail() {
             <strong>View Uploaded Document</strong>
           </p>
 
-        <p className="text-lg hover:text-blue-700 hover:underline cursor-pointer">
+        <p className="text-lg">
             <strong>AI Spam Detected:</strong>{" "}
             {grievance.isSpam ? (
               <span className="text-red-600 font-semibold">Yes</span>

@@ -138,7 +138,7 @@ const ClientTable = () => {
                 <table className="min-w-full border-collapse rounded-lg">
                     <thead className="bg-gray-800 text-white sticky top-0">
                         <tr>
-                            {["Grievance Code", "Complainant", "Description", "Date of Receipt", "Email", "AI Resolved", "Status", "Download"]
+                            {["Grievance Code", "Complainant", "Description", "Date of Receipt", "Email", "AI Resolved", "Status"]
                                 .map((header, index) => (
                                     <th key={index} className="py-3 px-4 text-left font-medium">{header}</th>
                                 ))}

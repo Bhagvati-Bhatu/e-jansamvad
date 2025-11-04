@@ -77,7 +77,7 @@ const AIAnalyzer = () => {
   };
 
   return (
-    <div style={{ maxWidth: 700, margin: "auto", padding: 20, background: "#fff", borderRadius: 8 }}>
+    <div style={{ maxWidth: 700, margin: "auto", padding: 20,  background: "#f6f3f4",  border: "1px solid #000", borderRadius: 4 }}>
       <h2 style={{ textAlign: "center" }}>AI PDF Analyzer</h2>
 
       <input type="file" accept="application/pdf" onChange={handleFileChange} style={{ width: "100%", marginBottom: 10 }} />
@@ -90,7 +90,7 @@ const AIAnalyzer = () => {
         {isInitialized ? "Initialized ✅" : "Initialize AI"}
       </button>
 
-      <textarea value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Ask a question..." style={{ width: "100%", minHeight: 80, marginBottom: 10 }} />
+      <textarea value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="Ask a question..." style={{ width: "100%", minHeight: 80, marginBottom: 10, border: "1px solid #000", padding: 3}} />
 
       <button onClick={askQuestion} disabled={loading || !isInitialized} style={{ width: "100%", padding: 10, backgroundColor: "#28A745", color: "#fff", border: "none", borderRadius: 6 }}>
         {loading ? "Processing..." : "Ask Question"}
