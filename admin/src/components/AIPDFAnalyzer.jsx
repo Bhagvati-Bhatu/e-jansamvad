@@ -80,7 +80,12 @@ const AIAnalyzer = () => {
     <div style={{ maxWidth: 700, margin: "auto", padding: 20,  background: "#f6f3f4",  border: "1px solid #000", borderRadius: 4 }}>
       <h2 style={{ textAlign: "center" }}>AI PDF Analyzer</h2>
 
-      <input type="file" accept="application/pdf" onChange={handleFileChange} style={{ width: "100%", marginBottom: 10, border:"1px solid #000", borderRadius:8 }} />
+      <input 
+  type="file" 
+  accept="application/pdf" 
+  onChange={handleFileChange} 
+  className="w-full mb-2 file:border file:border-black file:px-4 file:py-2 file:rounded file:bg-gray-100 file:cursor-pointer hover:file:bg-gray-200"
+/>
 
       <button
         onClick={initializeLLM}
