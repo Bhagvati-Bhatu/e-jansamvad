@@ -6,42 +6,46 @@ const ProfilePage = ({ setActivePage, showToast }) => {
   const navigate = useNavigate(); // ✅ Move useNavigate outside the function
 
   async function handleSaveProfile(event) {
-    event.preventDefault(); // Prevents form submission from refreshing the page
+    event.preventDefault();
     console.log("Saving profile...");
-
+  
     const name = document.getElementById("name").value;
-    const gender = document.getElementById("gender").value;
+    
+    // ✅ FIX: Get selected radio button value
+    const genderRadio = document.querySelector('input[name="gender"]:checked');
+    const gender = genderRadio ? genderRadio.value : "";
+    
     const state = document.getElementById("state").value;
     const city = document.getElementById("district").value;
     const pincode = document.getElementById("pincode").value;
     const address = document.getElementById("address").value;
     const mobile = document.getElementById("mobile").value;
-
+  
     const response = await fetch("https://e-jansamvad-1.onrender.com/user/profileUpdate", {
-        method: "PUT",
-        credentials: "include",
-        headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify({
-            name, gender, state, city, pincode, address, mobile
-        }),
+      method: "PUT",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({
+        name, gender, state, city, pincode, address, mobile
+      }),
     });
-
+  
     const data = await response.json();
-
+  
     if (response.status === 200) {
-        if (data.token) localStorage.setItem("token", data.token);
-        if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
-        localStorage.setItem("showProfileUpdateToast", "true");
-        setActivePage("home");
-        console.log("Profile updated successfullyyy");
-        // navigate("/homepage"); // ✅ Works correctly now
+      if (data.token) localStorage.setItem("token", data.token);
+      if (data.user) localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("showProfileUpdateToast", "true");
+      setActivePage("home");
+      console.log("Profile updated successfullyyy");
     } else {
-        console.error("Failed to update profile");
+      console.error("Failed to update profile");
     }
   }
+  
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <motion.div
@@ -76,20 +80,70 @@ const ProfilePage = ({ setActivePage, showToast }) => {
 
           {/* Gender, State, District */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {["Gender", "State", "District"].map((field, index) => (
-              <motion.div key={index} whileFocus={{ scale: 1.05 }}>
-                <label className="block text-sm font-semibold text-gray-700">{field} *</label>
-                <input
-                  type={field === "Gender" ? "select" : "text"}
-                  id = {field.toLowerCase()}
-                  name = {field.toLowerCase()}
-                  className="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm
-                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                  required
-                />
-              </motion.div>
-            ))}
-          </div>
+  {/* Gender Field with Radio Buttons */}
+  <motion.div whileFocus={{ scale: 1.05 }}>
+    <label className="block text-sm font-semibold text-gray-700 mb-2">Gender *</label>
+    <div className="flex gap-4 mt-1">
+      <label className="flex items-center cursor-pointer">
+        <input
+          type="radio"
+          name="gender"
+          value="male"
+          className="mr-2 w-4 h-4 text-blue-500 focus:ring-2 focus:ring-blue-500"
+          required
+        />
+        <span className="text-gray-700">Male</span>
+      </label>
+      <label className="flex items-center cursor-pointer">
+        <input
+          type="radio"
+          name="gender"
+          value="female"
+          className="mr-2 w-4 h-4 text-blue-500 focus:ring-2 focus:ring-blue-500"
+          required
+        />
+        <span className="text-gray-700">Female</span>
+      </label>
+      <label className="flex items-center cursor-pointer">
+        <input
+          type="radio"
+          name="gender"
+          value="other"
+          className="mr-2 w-4 h-4 text-blue-500 focus:ring-2 focus:ring-blue-500"
+          required
+        />
+        <span className="text-gray-700">Other</span>
+      </label>
+    </div>
+  </motion.div>
+
+  {/* State Field */}
+  <motion.div whileFocus={{ scale: 1.05 }}>
+    <label className="block text-sm font-semibold text-gray-700">State *</label>
+    <input
+      type="text"
+      id="state"
+      name="state"
+      className="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm
+                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+      required
+    />
+  </motion.div>
+
+  {/* District Field */}
+  <motion.div whileFocus={{ scale: 1.05 }}>
+    <label className="block text-sm font-semibold text-gray-700">District *</label>
+    <input
+      type="text"
+      id="district"
+      name="district"
+      className="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm
+                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+      required
+    />
+  </motion.div>
+</div>
+
 
           {/* Pincode & Address */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
