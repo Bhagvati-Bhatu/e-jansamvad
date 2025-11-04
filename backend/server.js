@@ -225,34 +225,42 @@ app.post("/api/transcribe", (req, res) => {
 /* =========================
    Gemini Proxy
    ========================= */
-
-app.post("/api/gemini/generate", async (req, res) => {
-  try {
-    const { prompt } = req.body || {};
-    if (!prompt) return res.status(400).json({ error: "Missing prompt" });
-
-    const r = await axios.post(
-      GEMINI_URL,
-      { contents: [{ parts: [{ text: prompt }] }] },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": GEMINI_API_KEY
+   app.post("/api/gemini/generate", async (req, res) => {
+    try {
+      const { prompt } = req.body || {};
+      if (!prompt) return res.status(400).json({ error: "Missing prompt" });
+  
+      // Use Groq instead of Gemini
+      const groqResponse = await axios.post(
+        GROQ_CHAT_URL,
+        {
+          model: "llama-3.1-8b-instant",
+          messages: [{ role: "user", content: prompt }]
         },
-        timeout: 60000
-      }
-    );
-
-    return res.json(r.data);
-  } catch (err) {
-    console.error("Gemini proxy error:", err?.response?.data || err.message);
-    const status = err?.response?.status || 500;
-    return res.status(status).json({
-      error: "Gemini request failed",
-      details: err?.response?.data || err.message
-    });
-  }
-});
+        {
+          headers: {
+            Authorization: `Bearer ${GROQ_API_KEY}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+  
+      const answer = groqResponse.data.choices[0]?.message?.content || "No response";
+      
+      // Return in a Gemini-compatible format
+      return res.json({
+        candidates: [{
+          content: {
+            parts: [{ text: answer }]
+          }
+        }]
+      });
+    } catch (err) {
+      console.error("Groq proxy error:", err?.response?.data || err.message);
+      return res.status(500).json({ error: "Request failed" });
+    }
+  });
+  
 
 /* =========================
    RAG Helpers (Jina/Groq/Pinecone)
