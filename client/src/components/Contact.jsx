@@ -6,7 +6,7 @@ export default function Contact() {
     lastName: "",
     email: "",
     phone: "",
-    countryCode: "+62",
+    countryCode: "+91",
     message: ""
   });
   const [status, setStatus] = useState("");
@@ -22,7 +22,7 @@ export default function Contact() {
     setStatus("Sending...");
 
     try {
-      const response = await fetch("http://localhost:5000/api/contact", {
+      const response = await fetch("https://e-jansamvad-1.onrender.com/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)
@@ -37,7 +37,7 @@ export default function Contact() {
           lastName: "", 
           email: "", 
           phone: "", 
-          countryCode: "+62", 
+          countryCode: "+91", 
           message: "" 
         });
       } else {
