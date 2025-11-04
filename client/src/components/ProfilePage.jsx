@@ -76,70 +76,20 @@ const ProfilePage = ({ setActivePage, showToast }) => {
 
           {/* Gender, State, District */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-  {/* Gender Field with Radio Buttons */}
-  <motion.div whileFocus={{ scale: 1.05 }}>
-    <label className="block text-sm font-semibold text-gray-700 mb-2">Gender *</label>
-    <div className="flex gap-4 mt-1">
-      <label className="flex items-center cursor-pointer">
-        <input
-          type="radio"
-          name="gender"
-          value="male"
-          className="mr-2 w-4 h-4 text-blue-500 focus:ring-2 focus:ring-blue-500"
-          required
-        />
-        <span className="text-gray-700">Male</span>
-      </label>
-      <label className="flex items-center cursor-pointer">
-        <input
-          type="radio"
-          name="gender"
-          value="female"
-          className="mr-2 w-4 h-4 text-blue-500 focus:ring-2 focus:ring-blue-500"
-          required
-        />
-        <span className="text-gray-700">Female</span>
-      </label>
-      <label className="flex items-center cursor-pointer">
-        <input
-          type="radio"
-          name="gender"
-          value="other"
-          className="mr-2 w-4 h-4 text-blue-500 focus:ring-2 focus:ring-blue-500"
-          required
-        />
-        <span className="text-gray-700">Other</span>
-      </label>
-    </div>
-  </motion.div>
-
-  {/* State Field */}
-  <motion.div whileFocus={{ scale: 1.05 }}>
-    <label className="block text-sm font-semibold text-gray-700">State *</label>
-    <input
-      type="text"
-      id="state"
-      name="state"
-      className="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm
-                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-      required
-    />
-  </motion.div>
-
-  {/* District Field */}
-  <motion.div whileFocus={{ scale: 1.05 }}>
-    <label className="block text-sm font-semibold text-gray-700">District *</label>
-    <input
-      type="text"
-      id="district"
-      name="district"
-      className="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm
-                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-      required
-    />
-  </motion.div>
-</div>
-
+            {["Gender", "State", "District"].map((field, index) => (
+              <motion.div key={index} whileFocus={{ scale: 1.05 }}>
+                <label className="block text-sm font-semibold text-gray-700">{field} *</label>
+                <input
+                  type={field === "Gender" ? "select" : "text"}
+                  id = {field.toLowerCase()}
+                  name = {field.toLowerCase()}
+                  className="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm
+                             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  required
+                />
+              </motion.div>
+            ))}
+          </div>
 
           {/* Pincode & Address */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
