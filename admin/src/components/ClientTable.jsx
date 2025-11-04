@@ -169,7 +169,7 @@ const ClientTable = () => {
                                     </td>
 
                                     <td className="py-3 px-4">{client.currentStatus}</td>
-                                    <td className="py-3 px-4">
+                                    {/* <td className="py-3 px-4">
                                         <button
                                             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center justify-center transition duration-200"
                                             onClick={(e) => {
@@ -180,7 +180,7 @@ const ClientTable = () => {
                                         >
                                             {loadingGrievance === client.grievanceCode ? "Downloading..." : "Download"}
                                         </button>
-                                    </td>
+                                    </td> */}
                                 </tr>
                             ))
                         ) : (

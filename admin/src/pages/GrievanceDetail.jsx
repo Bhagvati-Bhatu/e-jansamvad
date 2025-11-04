@@ -297,7 +297,7 @@ function GrievanceDetail() {
         </div>
 
         <div className="space-y-6">
-          <div className="p-5 bg-gray-100 rounded-xl border-2 border-black">
+          <div className="p-5 bg-gray-100 rounded-lg border-1 border-black">
             <h3 className="text-lg font-semibold text-gray-700 mb-3">📌 Grievance Progress</h3>
 
             <div className="flex flex-wrap gap-3 mb-4">
