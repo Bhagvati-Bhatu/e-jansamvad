@@ -36,13 +36,12 @@ const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_CHAT_URL = "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_CHAT_MODEL = "llama3-8b-8192";
 
-// ===== Pinecone Client =====
-const { PineconeClient } = require("@pinecone-database/pinecone");
-const pinecone = new PineconeClient();
+// ===== Pinecone Client (Modern SDK) =====
+const { Pinecone } = require("@pinecone-database/pinecone");
+let pineconeIndex = null;
 let pineconeReady = false;
 const PINECONE_API_KEY = process.env.PINECONE_API_KEY;
-const PINECONE_ENVIRONMENT = process.env.PINECONE_ENVIRONMENT;
-const PINECONE_INDEX = process.env.PINECONE_INDEX || "";
+const PINECONE_INDEX_NAME = process.env.PINECONE_INDEX || "";
 
 // ===== Guards =====
 if (!MONGO_URI) {
@@ -289,31 +288,18 @@ async function createJinaEmbeddings(texts) {
   return response.data.data.map((item) => item.embedding);
 }
 
-// --- Pinecone Helpers ---
-async function pineconeUpsert(index, vectors) {
-  // FIXED: Use the correct property structure for the older Pinecone client
-  const batchSize = 50;
-  for (let i = 0; i < vectors.length; i += batchSize) {
-    const batch = vectors.slice(i, i + batchSize);
-    try {
-      // Try the newer API shape first
-      await index.upsert({ vectors: batch });
-    } catch (err) {
-      // Fall back to older API shape
-      await index.upsert({ upsertRequest: { vectors: batch } });
-    }
-  }
+// --- Pinecone Helpers (Modern SDK) ---
+async function pineconeUpsert(vectors) {
+  await pineconeIndex.upsert(vectors);
 }
 
-async function pineconeQuery(index, vector, topK = 4) {
-  try {
-    const r = await index.query({ vector, topK, includeMetadata: true });
-    return r.matches || [];
-  } catch (err) {
-    // Try alternate shape
-    const r2 = await index.query({ queryRequest: { vector, topK, includeMetadata: true } });
-    return r2.matches || [];
-  }
+async function pineconeQuery(vector, topK = 4) {
+  const result = await pineconeIndex.query({
+    vector,
+    topK,
+    includeMetadata: true
+  });
+  return result.matches || [];
 }
 
 /* =========================
@@ -346,23 +332,19 @@ app.post("/init_rag", (req, res) => {
 
       if (!pineconeReady) return res.status(503).json({ error: "Vector DB not ready." });
       
-      console.log("🔍 Getting Pinecone index:", PINECONE_INDEX);
-      const index = pinecone.Index(PINECONE_INDEX);
-      
       // CLEAR OLD DATA: Delete all vectors before uploading new PDF
       console.log("🗑️ Clearing previous PDF data from Pinecone...");
       try {
-        await index.delete1({ deleteAll: true });
+        await pineconeIndex.deleteAll();
         console.log("✅ Old data cleared successfully");
       } catch (deleteErr) {
         console.warn("⚠️ Could not clear old data:", deleteErr.message);
-        // Continue anyway - worst case is mixed results
       }
       
       console.log("🔍 Attempting to upsert", vectors.length, "vectors");
       console.log("🔍 First vector dimension:", vectors[0].values.length);
       
-      await pineconeUpsert(index, vectors);
+      await pineconeUpsert(vectors);
 
       console.log(`✅ Indexed ${vectors.length} vectors to Pinecone via Jina AI.`);
       return res.json({ ok: true, inserted: vectors.length });
@@ -383,8 +365,7 @@ app.post("/ask_question", async (req, res) => {
 
     // 2. Query Pinecone
     if (!pineconeReady) return res.status(503).json({ error: "Vector DB not ready." });
-    const index = pinecone.Index(PINECONE_INDEX);
-    const matches = await pineconeQuery(index, qEmbedding, 4);
+    const matches = await pineconeQuery(qEmbedding, 4);
     const context = matches.map((m) => m.metadata?.text || "").join("\n\n---\n\n");
 
     // 3. Generate answer with Groq
@@ -441,27 +422,15 @@ async function start() {
     bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, { bucketName: "uploads" });
     console.log("✅ Mongo connected & GridFS bucket initialized.");
 
-    if (PINECONE_API_KEY && PINECONE_ENVIRONMENT) {
+    if (PINECONE_API_KEY && PINECONE_INDEX_NAME) {
       try {
-        console.log("🔍 Attempting Pinecone init with environment:", PINECONE_ENVIRONMENT);
-        console.log("🔍 Using index:", PINECONE_INDEX);
-        
-        await pinecone.init({
-          apiKey: PINECONE_API_KEY,
-          environment: PINECONE_ENVIRONMENT
-        });
+        const pc = new Pinecone({ apiKey: PINECONE_API_KEY });
+        pineconeIndex = pc.index(PINECONE_INDEX_NAME);
         pineconeReady = true;
         console.log("✅ Pinecone initialized successfully");
-        
-        // Test the index connection
-        const testIndex = pinecone.Index(PINECONE_INDEX);
-        console.log("✅ Index object created");
       } catch (err) {
         pineconeReady = false;
-        console.error("❌ Failed to initialize Pinecone:");
-        console.error("Error name:", err.name);
-        console.error("Error message:", err.message);
-        console.error("Full error:", err);
+        console.error("❌ Failed to initialize Pinecone:", err);
       }
     }
 
