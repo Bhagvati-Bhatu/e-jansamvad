@@ -46,7 +46,6 @@ const SignupForm = () => {
     "West Bengal": ["choose","Kolkata", "Howrah", "Durgapur", "Asansol", "Siliguri", "Malda", "Kharagpur", "Bardhaman", "Midnapore", "Berhampore"],
     "Delhi": ["choose","New Delhi", "Connaught Place", "Chandni Chowk", "Saket", "Karol Bagh", "Rohini", "Dwarka", "Lajpat Nagar", "Hauz Khas", "Janakpuri"]
   };
-  
 
   const States = Object.keys(stateLists);
   const [selectedState, setSelectedState] = useState(States[0]);
@@ -61,26 +60,58 @@ const SignupForm = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+    // Clear error when user types
+    if (errors[name]) {
+      setErrors({ ...errors, [name]: "" });
+    }
   };
 
   const navigate = useNavigate();
   const [status, setStatus] = useState(null);
+  const [errors, setErrors] = useState({}); // ✅ Add error state
+  const [isLoading, setIsLoading] = useState(false); // ✅ Add loading state
 
   async function handleSignup() {
+    setIsLoading(true);
+    setStatus(null);
+    setErrors({});
+    
     console.log(formData);
-    const response = await fetch("https://e-jansamvad-1.onrender.com/user/signup", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    });
-    if (response.status === 200) {
+    
+    try {
+      const response = await fetch("https://e-jansamvad-1.onrender.com/user/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
       const data = await response.json();
-      console.log(data);
-      navigate("/login");
-    } else if (response.status === 400) {
-      setStatus("User already exists");
+
+      if (response.status === 200) {
+        console.log(data);
+        setStatus("✅ Registration successful! Redirecting to login...");
+        setTimeout(() => navigate("/login"), 2000);
+      } else if (response.status === 400) {
+        // ✅ Handle specific field errors
+        if (data.field === "email") {
+          setErrors({ email: data.error });
+          setStatus("❌ " + data.error);
+        } else if (data.field === "phone") {
+          setErrors({ phone: data.error });
+          setStatus("❌ " + data.error);
+        } else {
+          setStatus("❌ " + (data.error || "Registration failed"));
+        }
+      } else {
+        setStatus("❌ Registration failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
+      setStatus("❌ Network error. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -96,141 +127,157 @@ const SignupForm = () => {
         </p>
 
         <form className="mt-6" onSubmit={(e) => e.preventDefault()}>
-  <div className="grid grid-cols-2 gap-6">
-    <div>
-      <label className="text-sm font-semibold text-gray-600">Full Name *</label>
-      <input 
-        type="text" 
-        name="name" 
-        value={formData.name} 
-        onChange={handleChange} 
-        className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none" 
-        required 
-      />
-    </div>
-    <div>
-      <label className="text-sm font-semibold text-gray-600">Password *</label>
-      <input 
-        type="password" 
-        name="password" 
-        value={formData.password} 
-        onChange={handleChange} 
-        className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none" 
-        required 
-      />
-    </div>
-  </div>
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <label className="text-sm font-semibold text-gray-600">Full Name *</label>
+              <input 
+                type="text" 
+                name="name" 
+                value={formData.name} 
+                onChange={handleChange} 
+                className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none" 
+                required 
+              />
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-gray-600">Password *</label>
+              <input 
+                type="password" 
+                name="password" 
+                value={formData.password} 
+                onChange={handleChange} 
+                className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none" 
+                required 
+              />
+            </div>
+          </div>
 
-  <div className="grid grid-cols-2 gap-6 mt-4">
-    <div>
-      <label className="text-sm font-semibold text-gray-600">Gender *</label>
-      <div className="flex space-x-4 mt-1">
-        {["Male", "Female", "Transgender"].map((gender) => (
-          <label key={gender} className="flex items-center space-x-2">
+          <div className="grid grid-cols-2 gap-6 mt-4">
+            <div>
+              <label className="text-sm font-semibold text-gray-600">Gender *</label>
+              <div className="flex space-x-4 mt-1">
+                {["Male", "Female", "Transgender"].map((gender) => (
+                  <label key={gender} className="flex items-center space-x-2">
+                    <input 
+                      type="radio" 
+                      name="gender" 
+                      value={gender} 
+                      onChange={handleChange} 
+                      className="text-indigo-500 focus:ring-indigo-400" 
+                    />
+                    <span>{gender}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-gray-600">Pincode *</label>
+              <input 
+                type="text" 
+                name="pincode" 
+                value={formData.pincode} 
+                onChange={handleChange} 
+                className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none" 
+                pattern="[0-9]{6}" 
+                maxLength="6"
+                required 
+              />
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <label className="text-sm font-semibold text-gray-600">Address *</label>
             <input 
-              type="radio" 
-              name="gender" 
-              value={gender} 
+              type="text" 
+              name="address" 
+              value={formData.address} 
               onChange={handleChange} 
-              className="text-indigo-500 focus:ring-indigo-400" 
+              className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none" 
+              required 
             />
-            <span>{gender}</span>
-          </label>
-        ))}
-      </div>
-    </div>
-    <div>
-      <label className="text-sm font-semibold text-gray-600">Pincode *</label>
-      <input 
-        type="text" 
-        name="pincode" 
-        value={formData.pincode} 
-        onChange={handleChange} 
-        className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none" 
-        pattern="[0-9]{6}" 
-        maxLength="6"
-        required 
-      />
-    </div>
-  </div>
+          </div>
 
-  <div className="mt-4">
-    <label className="text-sm font-semibold text-gray-600">Address *</label>
-    <input 
-      type="text" 
-      name="address" 
-      value={formData.address} 
-      onChange={handleChange} 
-      className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none" 
-      required 
-    />
-  </div>
+          <div className="grid grid-cols-2 gap-6 mt-4">
+            <div>
+              <label className="text-sm font-semibold text-gray-600">State *</label>
+              <select 
+                name="state" 
+                value={formData.state} 
+                onChange={(e) => { handleChange(e); handleStateChange(e); }} 
+                className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none" 
+                required
+              >
+                {States.map((state, index) => (
+                  <option key={index} value={state}>{state}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-gray-600">City *</label>
+              <select 
+                name="city" 
+                value={formData.city} 
+                onChange={handleChange} 
+                className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none" 
+                required
+              >
+                {list.map((item, index) => (
+                  <option key={index} value={item}>{item}</option>
+                ))}
+              </select>
+            </div>
+          </div>
 
-  <div className="grid grid-cols-2 gap-6 mt-4">
-    <div>
-      <label className="text-sm font-semibold text-gray-600">State *</label>
-      <select 
-        name="state" 
-        value={formData.state} 
-        onChange={(e) => { handleChange(e); handleStateChange(e); }} 
-        className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none" 
-        required
-      >
-        {States.map((state, index) => (
-          <option key={index} value={state}>{state}</option>
-        ))}
-      </select>
-    </div>
-    <div>
-      <label className="text-sm font-semibold text-gray-600">City *</label>
-      <select 
-        name="city" 
-        value={formData.city} 
-        onChange={handleChange} 
-        className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none" 
-        required
-      >
-        {list.map((item, index) => (
-          <option key={index} value={item}>{item}</option>
-        ))}
-      </select>
-    </div>
-  </div>
+          <div className="grid grid-cols-2 gap-6 mt-4">
+            <div>
+              <label className="text-sm font-semibold text-gray-600">Phone *</label>
+              <input 
+                type="text" 
+                name="phone" 
+                value={formData.phone} 
+                onChange={handleChange} 
+                className={`w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none ${
+                  errors.phone ? "border-red-500" : ""
+                }`}
+                maxLength="10"
+                required 
+              />
+              {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+            </div>
+            <div>
+              <label className="text-sm font-semibold text-gray-600">Email *</label>
+              <input 
+                type="email" 
+                name="email" 
+                value={formData.email} 
+                onChange={handleChange} 
+                className={`w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none ${
+                  errors.email ? "border-red-500" : ""
+                }`}
+                required 
+              />
+              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+            </div>
+          </div>
 
-  <div className="grid grid-cols-2 gap-6 mt-4">
-    <div>
-      <label className="text-sm font-semibold text-gray-600">Phone *</label>
-      <input 
-        type="text" 
-        name="phone" 
-        value={formData.phone} 
-        onChange={handleChange} 
-        className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none" 
-        required 
-      />
-    </div>
-    <div>
-      <label className="text-sm font-semibold text-gray-600">Email *</label>
-      <input 
-        type="email" 
-        name="email" 
-        value={formData.email} 
-        onChange={handleChange} 
-        className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none" 
-        required 
-      />
-    </div>
-  </div>
+          {/* ✅ Status message */}
+          {status && (
+            <div className={`mt-4 p-3 rounded-lg text-center font-medium ${
+              status.includes("✅") ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+            }`}>
+              {status}
+            </div>
+          )}
 
-  <button 
-    type="submit" 
-    className="w-full bg-gradient-to-r from-[#ffb703] to-[#fb8500] text-white py-3 rounded-full font-semibold shadow-md mt-6 hover:shadow-lg transition-all duration-300" 
-    onClick={handleSignup}
-  >
-    Register ➜
-  </button>
-</form>
-
+          <button 
+            type="submit" 
+            className="w-full bg-gradient-to-r from-[#ffb703] to-[#fb8500] text-white py-3 rounded-full font-semibold shadow-md mt-6 hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed" 
+            onClick={handleSignup}
+            disabled={isLoading}
+          >
+            {isLoading ? "Registering..." : "Register ➜"}
+          </button>
+        </form>
       </div>
     </div>
   );

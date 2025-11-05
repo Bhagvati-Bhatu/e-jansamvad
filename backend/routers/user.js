@@ -24,27 +24,49 @@ router.get('/userInfo', authMiddleware,  async (req, res) => {
     }
 })
 
-router.post('/signup', async (req, res)=>{
-    const hashPassword = bcrypt.hashSync(req.body.password, 10);
-    const user = await User.create
-       ({ name: req.body.name,
-        email: req.body.email,
-        password: hashPassword,
-        gender: req.body.gender,
-        phone: req.body.phone,
-        address: req.body.address,
-        city: req.body.city,
-        state: req.body.state, 
-        pincode: req.body.pincode
-    });
-        // console.log(user);
+router.post('/signup', async (req, res) => {
+  try {
+      // ✅ Check if email already exists
+      const existingEmail = await User.findOne({ email: req.body.email });
+      if (existingEmail) {
+          return res.status(400).json({ 
+              error: "Email already exists", 
+              field: "email" 
+          });
+      }
 
-        user.save().then((data)=>{
-           return res.status(200).json(data);
-        }).catch((error)=>{
-           return res.status(400).json(error);
-        });
-})
+      // ✅ Check if phone number already exists
+      const existingPhone = await User.findOne({ phone: req.body.phone });
+      if (existingPhone) {
+          return res.status(400).json({ 
+              error: "Phone number already exists", 
+              field: "phone" 
+          });
+      }
+
+      // Proceed with user creation
+      const hashPassword = bcrypt.hashSync(req.body.password, 10);
+      const user = new User({
+          name: req.body.name,
+          email: req.body.email,
+          password: hashPassword,
+          gender: req.body.gender,
+          phone: req.body.phone,
+          address: req.body.address,
+          city: req.body.city,
+          state: req.body.state, 
+          pincode: req.body.pincode
+      });
+
+      const savedUser = await user.save();
+      return res.status(200).json(savedUser);
+      
+  } catch (error) {
+      console.error("Signup error:", error);
+      return res.status(500).json({ error: "Server error during signup" });
+  }
+});
+
 
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
