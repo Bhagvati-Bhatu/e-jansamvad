@@ -121,7 +121,7 @@ export default function LoginForm() {
           <a href="#" className="hover:text-indigo-700 ml-2 transition">Forgot Username</a> */}
           <br />
           <a href="/signup" className="hover:text-indigo-700 font-medium transition">
-            Click here to Sign Up
+            New User Sign Up
           </a>
         </div>
       </div>

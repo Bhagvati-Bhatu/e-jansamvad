@@ -19,7 +19,7 @@ import AutoLogoutWrapper from './components/AutoLogoutWrapper';
 function AppContent () {
   const location = useLocation();
   // Show Navbar only on specific paths
-  const showNavbar = ["/", "/complaints", "/faqs", "/contact","/how-it-works"].includes(location.pathname);
+  const showNavbar = ["/", "/complaints", "/faqs", "/contact","/how-it-works", "login", "signup"].includes(location.pathname);
 
   return (
 

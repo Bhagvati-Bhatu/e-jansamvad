@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { User, Mail, Globe, Calendar, MapPin, Landmark, Edit3 } from "lucide-react"; // Icons for cards
+import { User, Mail, Globe, Calendar, MapPin, Landmark, Edit3, Phone } from "lucide-react"; // Icons for cards
 import { getCookie } from "../utilities/cookie";
 
 const AccountDetails = () => {
@@ -40,8 +40,10 @@ const AccountDetails = () => {
 
   const personalInfo = [
     { label: "Name", value: user.name || "N/A", icon: <User size={20} /> },
-    { label: "Date of Birth", value: user.dob || "N/A", icon: <Calendar size={20} /> },
-    { label: "Language", value: user.language || "English (US)", icon: <Globe size={20} /> },
+    // { label: "Date of Birth", value: user.dob || "N/A", icon: <Calendar size={20} /> },
+    { label: "Phone Number", value: user.phone || "N/A", icon: <Phone size={20} /> },
+    { label: "Gender", value: user.gender || "N/A", icon: <User size={20} /> },
+    // { label: "Language", value: user.language || "English (US)", icon: <Globe size={20} /> },
     { label: "Contactable at", value: user.email || "N/A", icon: <Mail size={20} /> },
   ];
 
