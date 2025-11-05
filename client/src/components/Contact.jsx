@@ -57,7 +57,7 @@ export default function Contact() {
         {/* Left Section: Contact Information */}
         <div className="space-y-6">
           <h1 className="text-4xl font-extrabold text-gray-800">
-            Get in Touch
+            Get in Touch (Future Scope)
           </h1>
           <p className="text-lg text-gray-600">
             Contact us through email, phone, or fill out the form below to submit your grievance. Our team will address your concerns promptly.
