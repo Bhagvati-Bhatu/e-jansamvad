@@ -6,8 +6,8 @@ const SignupForm = () => {
     name: "",
     gender: "",
     address: "",
-    state: "",
-    city: "",
+    state: "choose",
+    city: "choose",
     phone: "",
     email: "",
     password: "",
@@ -48,13 +48,14 @@ const SignupForm = () => {
   };
 
   const States = Object.keys(stateLists);
-  const [selectedState, setSelectedState] = useState(States[0]);
-  const [list, setList] = useState(stateLists[selectedState]);
+  const [selectedState, setSelectedState] = useState("choose");
+  const [list, setList] = useState(stateLists["choose"]);
 
   const handleStateChange = (event) => {
     const newState = event.target.value;
     setSelectedState(newState);
     setList(stateLists[newState]);
+    setFormData({ ...formData, state: newState, city: "choose" });
   };
 
   const handleChange = (e) => {
@@ -68,10 +69,75 @@ const SignupForm = () => {
 
   const navigate = useNavigate();
   const [status, setStatus] = useState(null);
-  const [errors, setErrors] = useState({}); // ✅ Add error state
-  const [isLoading, setIsLoading] = useState(false); // ✅ Add loading state
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+
+  // ✅ Validation functions
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.name || !formData.name.trim()) {
+      newErrors.name = "Full name is required";
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = "Name must be at least 2 characters";
+    } else if (!/^[a-zA-Z\s]+$/.test(formData.name)) {
+      newErrors.name = "Name can only contain letters and spaces";
+    }
+
+    if (!formData.password || !formData.password.trim()) {
+      newErrors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+
+    if (!formData.gender) {
+      newErrors.gender = "Please select a gender";
+    }
+
+    if (!formData.pincode || !formData.pincode.trim()) {
+      newErrors.pincode = "Pincode is required";
+    } else if (!/^\d{6}$/.test(formData.pincode)) {
+      newErrors.pincode = "Pincode must be exactly 6 digits";
+    }
+
+    if (!formData.address || !formData.address.trim()) {
+      newErrors.address = "Address is required";
+    } else if (formData.address.trim().length < 10) {
+      newErrors.address = "Address must be at least 10 characters";
+    }
+
+    if (!formData.state || formData.state === "choose") {
+      newErrors.state = "Please select a state";
+    }
+
+    if (!formData.city || formData.city === "choose") {
+      newErrors.city = "Please select a city";
+    }
+
+    if (!formData.phone || !formData.phone.trim()) {
+      newErrors.phone = "Phone number is required";
+    } else if (!/^\d{10}$/.test(formData.phone)) {
+      newErrors.phone = "Phone number must be exactly 10 digits";
+    }
+
+    if (!formData.email || !formData.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Please enter a valid email address";
+    }
+
+    return newErrors;
+  };
 
   async function handleSignup() {
+    // ✅ Validate form before submission
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      setStatus("❌ Please fix the errors above");
+      return;
+    }
+
     setIsLoading(true);
     setStatus(null);
     setErrors({});
@@ -94,13 +160,13 @@ const SignupForm = () => {
         setStatus("✅ Registration successful! Redirecting to login...");
         setTimeout(() => navigate("/login"), 2000);
       } else if (response.status === 400) {
-        // ✅ Handle specific field errors
+        // ✅ Handle specific field errors from backend
         if (data.field === "email") {
-          setErrors({ email: data.error });
-          setStatus("❌ " + data.error);
+          setErrors({ email: "A user with this email already exists" });
+          setStatus("❌ A user with this email already exists");
         } else if (data.field === "phone") {
-          setErrors({ phone: data.error });
-          setStatus("❌ " + data.error);
+          setErrors({ phone: "A user with this phone number already exists" });
+          setStatus("❌ A user with this phone number already exists");
         } else {
           setStatus("❌ " + (data.error || "Registration failed"));
         }
@@ -135,9 +201,11 @@ const SignupForm = () => {
                 name="name" 
                 value={formData.name} 
                 onChange={handleChange} 
-                className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none" 
-                required 
+                className={`w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none ${
+                  errors.name ? "border-red-500" : ""
+                }`}
               />
+              {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
             </div>
             <div>
               <label className="text-sm font-semibold text-gray-600">Password *</label>
@@ -146,9 +214,11 @@ const SignupForm = () => {
                 name="password" 
                 value={formData.password} 
                 onChange={handleChange} 
-                className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none" 
-                required 
+                className={`w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none ${
+                  errors.password ? "border-red-500" : ""
+                }`}
               />
+              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
             </div>
           </div>
 
@@ -162,6 +232,7 @@ const SignupForm = () => {
                       type="radio" 
                       name="gender" 
                       value={gender} 
+                      checked={formData.gender === gender}
                       onChange={handleChange} 
                       className="text-indigo-500 focus:ring-indigo-400" 
                     />
@@ -169,6 +240,7 @@ const SignupForm = () => {
                   </label>
                 ))}
               </div>
+              {errors.gender && <p className="text-red-500 text-xs mt-1">{errors.gender}</p>}
             </div>
             <div>
               <label className="text-sm font-semibold text-gray-600">Pincode *</label>
@@ -177,11 +249,12 @@ const SignupForm = () => {
                 name="pincode" 
                 value={formData.pincode} 
                 onChange={handleChange} 
-                className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none" 
-                pattern="[0-9]{6}" 
+                className={`w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none ${
+                  errors.pincode ? "border-red-500" : ""
+                }`}
                 maxLength="6"
-                required 
               />
+              {errors.pincode && <p className="text-red-500 text-xs mt-1">{errors.pincode}</p>}
             </div>
           </div>
 
@@ -192,9 +265,11 @@ const SignupForm = () => {
               name="address" 
               value={formData.address} 
               onChange={handleChange} 
-              className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none" 
-              required 
+              className={`w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none ${
+                errors.address ? "border-red-500" : ""
+              }`}
             />
+            {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
           </div>
 
           <div className="grid grid-cols-2 gap-6 mt-4">
@@ -203,14 +278,18 @@ const SignupForm = () => {
               <select 
                 name="state" 
                 value={formData.state} 
-                onChange={(e) => { handleChange(e); handleStateChange(e); }} 
-                className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none" 
-                required
+                onChange={handleStateChange} 
+                className={`w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none ${
+                  errors.state ? "border-red-500" : ""
+                }`}
               >
                 {States.map((state, index) => (
-                  <option key={index} value={state}>{state}</option>
+                  <option key={index} value={state}>
+                    {state === "choose" ? "-- Select State --" : state}
+                  </option>
                 ))}
               </select>
+              {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
             </div>
             <div>
               <label className="text-sm font-semibold text-gray-600">City *</label>
@@ -218,13 +297,18 @@ const SignupForm = () => {
                 name="city" 
                 value={formData.city} 
                 onChange={handleChange} 
-                className="w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none" 
-                required
+                disabled={selectedState === "choose"}
+                className={`w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none disabled:bg-gray-200 disabled:cursor-not-allowed ${
+                  errors.city ? "border-red-500" : ""
+                }`}
               >
                 {list.map((item, index) => (
-                  <option key={index} value={item}>{item}</option>
+                  <option key={index} value={item}>
+                    {item === "choose" ? "-- Select City --" : item}
+                  </option>
                 ))}
               </select>
+              {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
             </div>
           </div>
 
@@ -240,7 +324,6 @@ const SignupForm = () => {
                   errors.phone ? "border-red-500" : ""
                 }`}
                 maxLength="10"
-                required 
               />
               {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
             </div>
@@ -254,7 +337,6 @@ const SignupForm = () => {
                 className={`w-full p-3 border rounded-lg bg-gray-100 focus:ring-2 focus:ring-indigo-400 outline-none ${
                   errors.email ? "border-red-500" : ""
                 }`}
-                required 
               />
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
             </div>
