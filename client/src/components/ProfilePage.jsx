@@ -6,6 +6,55 @@ const ProfilePage = ({ setActivePage, showToast }) => {
   const navigate = useNavigate();
   const [errors, setErrors] = useState({});
 
+  const stateLists = {
+    "choose": ["choose"],
+    "Andhra Pradesh": ["choose","Visakhapatnam", "Vijayawada", "Guntur", "Tirupati", "Rajahmundry", "Kakinada", "Anantapur", "Nellore", "Kadapa", "Chittoor"],
+    "Arunachal Pradesh": ["choose","Itanagar", "Tawang", "Ziro", "Pasighat", "Bomdila", "Roing", "Tezu", "Along", "Seppa", "Changlang"],
+    "Assam": ["choose","Guwahati", "Dibrugarh", "Jorhat", "Silchar", "Tezpur", "Tinsukia", "Nagaon", "Diphu", "Bongaigaon", "Sivasagar"],
+    "Bihar": ["choose","Patna", "Gaya", "Muzaffarpur", "Bhagalpur", "Darbhanga", "Begusarai", "Purnia", "Samastipur", "Ara", "Chhapra"],
+    "Chhattisgarh": ["choose","Raipur", "Bhilai", "Bilaspur", "Korba", "Durg", "Jagdalpur", "Rajnandgaon", "Raigarh", "Ambikapur", "Dhamtari"],
+    "Goa": ["choose","Panaji", "Margao", "Vasco da Gama", "Mapusa", "Ponda", "Calangute", "Bicholim", "Canacona", "Curchorem", "Sanguem"],
+    "Gujarat": ["choose","Ahmedabad", "Surat", "Vadodara", "Rajkot", "Gandhinagar", "Jamnagar", "Bhavnagar", "Anand", "Junagadh", "Bhuj"],
+    "Haryana": ["choose","Gurugram", "Faridabad", "Panipat", "Ambala", "Karnal", "Rohtak", "Hisar", "Yamunanagar", "Sonipat", "Panchkula"],
+    "Himachal Pradesh": ["choose","Shimla", "Manali", "Dharamshala", "Kullu", "Solan", "Mandi", "Chamba", "Bilaspur", "Hamirpur", "Una"],
+    "Jharkhand": ["choose","Ranchi", "Jamshedpur", "Dhanbad", "Bokaro", "Hazaribagh", "Deoghar", "Giridih", "Ramgarh", "Palamu", "Dumka"],
+    "Karnataka": ["choose","Bengaluru", "Mysuru", "Hubballi", "Mangaluru", "Belagavi", "Shivamogga", "Davanagere", "Ballari", "Tumakuru", "Udupi"],
+    "Kerala": ["choose","Thiruvananthapuram", "Kochi", "Kozhikode", "Thrissur", "Alappuzha", "Palakkad", "Kollam", "Kannur", "Kottayam", "Malappuram"],
+    "Madhya Pradesh": ["choose","Bhopal", "Indore", "Gwalior", "Jabalpur", "Ujjain", "Ratlam", "Rewa", "Sagar", "Satna", "Chhindwara"],
+    "Maharashtra": ["choose","Mumbai", "Pune", "Nagpur", "Nashik", "Aurangabad", "Thane", "Solapur", "Kolhapur", "Amravati", "Navi Mumbai"],
+    "Manipur": ["choose","Imphal", "Bishnupur", "Thoubal", "Churachandpur", "Ukhrul", "Tamenglong", "Senapati", "Kakching", "Jiribam", "Moreh"],
+    "Meghalaya": ["choose","Shillong", "Tura", "Nongpoh", "Baghmara", "Jowai", "Williamnagar", "Resubelpara", "Mairang", "Nongstoin", "Khliehriat"],
+    "Mizoram": ["choose","Aizawl", "Lunglei", "Champhai", "Serchhip", "Kolasib", "Lawngtlai", "Saiha", "Mamit", "Bairabi", "Saitual"],
+    "Nagaland": ["choose","Kohima", "Dimapur", "Mokokchung", "Tuensang", "Mon", "Wokha", "Zunheboto", "Phek", "Kiphire", "Longleng"],
+    "Odisha": ["choose","Bhubaneswar", "Cuttack", "Rourkela", "Sambalpur", "Berhampur", "Puri", "Balasore", "Bhadrak", "Angul", "Jeypore"],
+    "Punjab": ["choose","Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Bathinda", "Mohali", "Pathankot", "Hoshiarpur", "Moga", "Ferozepur"],
+    "Rajasthan": ["choose","Jaipur", "Jodhpur", "Udaipur", "Kota", "Bikaner", "Ajmer", "Alwar", "Bharatpur", "Sikar", "Chittorgarh"],
+    "Sikkim": ["choose","Gangtok", "Namchi", "Mangan", "Gyalshing", "Pelling", "Rangpo", "Jorethang", "Ravangla", "Lachen", "Lachung"],
+    "Tamil Nadu": ["choose","Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Vellore", "Tirunelveli", "Erode", "Thoothukudi", "Dindigul"],
+    "Telangana": ["choose","Hyderabad", "Warangal", "Nizamabad", "Khammam", "Karimnagar", "Mahbubnagar", "Siddipet", "Ramagundam", "Mancherial", "Adilabad"],
+    "Tripura": ["choose","Agartala", "Udaipur", "Kailashahar", "Dharmanagar", "Ambassa", "Belonia", "Kamalpur", "Sonamura", "Khowai", "Bishalgarh"],
+    "Uttar Pradesh": ["choose","Lucknow", "Kanpur", "Agra", "Varanasi", "Prayagraj", "Meerut", "Ghaziabad", "Gorakhpur", "Bareilly", "Aligarh"],
+    "Uttarakhand": ["choose","Dehradun", "Haridwar", "Nainital", "Almora", "Rishikesh", "Mussoorie", "Pithoragarh", "Rudrapur", "Haldwani", "Tehri"],
+    "West Bengal": ["choose","Kolkata", "Howrah", "Durgapur", "Asansol", "Siliguri", "Malda", "Kharagpur", "Bardhaman", "Midnapore", "Berhampore"],
+    "Delhi": ["choose","New Delhi", "Connaught Place", "Chandni Chowk", "Saket", "Karol Bagh", "Rohini", "Dwarka", "Lajpat Nagar", "Hauz Khas", "Janakpuri"]
+  };
+
+  const States = Object.keys(stateLists);
+  const [selectedState, setSelectedState] = useState("choose");
+  const [selectedDistrict, setSelectedDistrict] = useState("choose");
+  const [districtList, setDistrictList] = useState(stateLists["choose"]);
+
+  const handleStateChange = (event) => {
+    const newState = event.target.value;
+    setSelectedState(newState);
+    setDistrictList(stateLists[newState]);
+    setSelectedDistrict("choose"); // Reset district when state changes
+  };
+
+  const handleDistrictChange = (event) => {
+    setSelectedDistrict(event.target.value);
+  };
+
   // ✅ Validation functions
   const validateName = (name) => {
     if (!name.trim()) return "Name is required";
@@ -26,14 +75,12 @@ const ProfilePage = ({ setActivePage, showToast }) => {
   };
 
   const validateState = (state) => {
-    if (!state.trim()) return "State is required";
-    if (!/^[a-zA-Z\s]+$/.test(state)) return "State can only contain letters";
+    if (!state || state === "choose") return "Please select a state";
     return "";
   };
 
   const validateDistrict = (district) => {
-    if (!district.trim()) return "District is required";
-    if (!/^[a-zA-Z\s]+$/.test(district)) return "District can only contain letters";
+    if (!district || district === "choose") return "Please select a district";
     return "";
   };
 
@@ -50,8 +97,8 @@ const ProfilePage = ({ setActivePage, showToast }) => {
     const name = document.getElementById("name").value;
     const genderRadio = document.querySelector('input[name="gender"]:checked');
     const gender = genderRadio ? genderRadio.value : "";
-    const state = document.getElementById("state").value;
-    const city = document.getElementById("district").value;
+    const state = selectedState;
+    const city = selectedDistrict;
     const pincode = document.getElementById("pincode").value;
     const address = document.getElementById("address").value;
     const mobile = document.getElementById("mobile").value;
@@ -186,33 +233,48 @@ const ProfilePage = ({ setActivePage, showToast }) => {
               {errors.gender && <p className="text-red-500 text-xs mt-1">{errors.gender}</p>}
             </motion.div>
 
-            {/* State */}
+            {/* State Dropdown */}
             <motion.div whileFocus={{ scale: 1.05 }}>
               <label className="block text-sm font-semibold text-gray-700">State *</label>
-              <input
-                type="text"
+              <select
                 id="state"
                 name="state"
+                value={selectedState}
+                onChange={handleStateChange}
                 className={`mt-1 block w-full p-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 transition-all duration-200 ${
                   errors.state ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
                 }`}
                 required
-              />
+              >
+                {States.map((state, index) => (
+                  <option key={index} value={state}>
+                    {state === "choose" ? "-- Select State --" : state}
+                  </option>
+                ))}
+              </select>
               {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
             </motion.div>
 
-            {/* District */}
+            {/* District Dropdown */}
             <motion.div whileFocus={{ scale: 1.05 }}>
               <label className="block text-sm font-semibold text-gray-700">District *</label>
-              <input
-                type="text"
+              <select
                 id="district"
                 name="district"
-                className={`mt-1 block w-full p-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 transition-all duration-200 ${
+                value={selectedDistrict}
+                onChange={handleDistrictChange}
+                disabled={selectedState === "choose"}
+                className={`mt-1 block w-full p-3 border rounded-md shadow-sm focus:outline-none focus:ring-2 transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed ${
                   errors.district ? "border-red-500 focus:ring-red-500" : "border-gray-300 focus:ring-blue-500"
                 }`}
                 required
-              />
+              >
+                {districtList.map((district, index) => (
+                  <option key={index} value={district}>
+                    {district === "choose" ? "-- Select District --" : district}
+                  </option>
+                ))}
+              </select>
               {errors.district && <p className="text-red-500 text-xs mt-1">{errors.district}</p>}
             </motion.div>
           </div>
