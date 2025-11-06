@@ -106,7 +106,7 @@ export default function LoginForm() {
 
         {/* Login Button */}
         <button
-          className={`w-full py-3 rounded-full font-semibold shadow-md mt-6 hover:shadow-lg transition-all duration-300 
+          className={`w-full py-3 cursor-pointer rounded-full font-semibold shadow-md mt-6 hover:shadow-lg transition-all duration-300 
             ${loading ? "opacity-60 cursor-not-allowed" : "bg-gradient-to-r from-[#ffb703] to-[#fb8500] text-white"}`}
           onClick={handleLogin}
           disabled={loading}
@@ -121,7 +121,7 @@ export default function LoginForm() {
           <a href="#" className="hover:text-indigo-700 ml-2 transition">Forgot Username</a> */}
           <br />
           <a href="/signup" className="hover:text-indigo-700 font-medium transition">
-            New User Sign Up
+            New User? Sign Up
           </a>
         </div>
       </div>

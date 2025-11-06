@@ -134,7 +134,7 @@ const ClientTable = () => {
                             currentGrievances.map((client, index) => (
                                 <tr
                                     key={index}
-                                    className={`border-b hover:bg-gray-100 transition duration-200 ${
+                                    className={`border-b hover:bg-gray-100 cursor-pointer transition duration-200 ${
                                         index % 2 === 0 ? "bg-gray-50" : "bg-white"
                                     }`}
                                     onClick={() => navigate(`/grievance/${client.grievanceCode}`)}

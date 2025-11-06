@@ -29,7 +29,7 @@ const SummaryCards = ({ grievances }) => {
       {cards.map((card, index) => (
         <div
           key={index}
-          className="p-6 bg-white cursor-pointer border border-gray-200 rounded-xl shadow-md transition-transform transform hover:scale-105 hover:shadow-lg"
+          className="p-6 bg-white border border-gray-200 rounded-xl shadow-md transition-transform transform hover:scale-105 hover:shadow-lg"
         >
           <div className="flex items-center justify-center mb-4">{card.icon}</div>
           <h2 className="text-4xl font-bold text-gray-900">{card.value}</h2>
